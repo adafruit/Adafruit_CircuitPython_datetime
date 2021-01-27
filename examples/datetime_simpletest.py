@@ -10,7 +10,7 @@
 
 # Example of working with a `datetime` object
 # from https://docs.python.org/3/library/datetime.html#examples-of-usage-datetime
-from adafruit_datetime import datetime, date, time, timezone
+from adafruit_datetime import datetime, date, time
 
 # Using datetime.combine()
 d = date(2005, 7, 14)
