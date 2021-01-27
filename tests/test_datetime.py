@@ -546,7 +546,6 @@ class TestDateTime(TestDate):
             else:
                 self.assertEqual(self.theclass.fromtimestamp(s), t)
 
-
     def test_timestamp_aware(self):
         t = self.theclass(1970, 1, 1, tzinfo=timezone.utc)
         self.assertEqual(t.timestamp(), 0.0)
