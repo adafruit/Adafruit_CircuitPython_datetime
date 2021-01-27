@@ -19,6 +19,8 @@ Introduction
 
 Basic date and time types. Implements a subset of the `CPython datetime module <https://docs.python.org/3/library/datetime.html>`_.
 
+NOTE: This library has a large memory footprint and is intended for hardware such as the SAMD51, ESP32-S2, and nRF52.
+
 Dependencies
 =============
 This driver depends on:
