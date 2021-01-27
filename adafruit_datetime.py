@@ -130,76 +130,6 @@ def _format_offset(off):
     return s
 
 
-# pylint: disable=invalid-name, too-many-locals, too-many-nested-blocks, too-many-branches, too-many-statements
-def _wrap_strftime(time_obj, strftime_fmt, timetuple):
-    # Don't call utcoffset() or tzname() unless actually needed.
-    f_replace = None  # the string to use for %f
-    z_replace = None  # the string to use for %z
-    Z_replace = None  # the string to use for %Z
-
-    # Scan strftime_fmt for %z and %Z escapes, replacing as needed.
-    newformat = []
-    push = newformat.append
-    i, n = 0, len(strftime_fmt)
-    while i < n:
-        ch = strftime_fmt[i]
-        i += 1
-        if ch == "%":
-            if i < n:
-                ch = strftime_fmt[i]
-                i += 1
-                if ch == "f":
-                    if f_replace is None:
-                        f_replace = "%06d" % getattr(time_obj, "microsecond", 0)
-                    newformat.append(f_replace)
-                elif ch == "z":
-                    if z_replace is None:
-                        z_replace = ""
-                        if hasattr(time_obj, "utcoffset"):
-                            offset = time_obj.utcoffset()
-                            if offset is not None:
-                                sign = "+"
-                                if offset.days < 0:
-                                    offset = -offset
-                                    sign = "-"
-                                h, rest = divmod(offset, timedelta(hours=1))
-                                m, rest = divmod(rest, timedelta(minutes=1))
-                                s = rest.seconds
-                                u = offset.microseconds
-                                if u:
-                                    z_replace = "%c%02d%02d%02d.%06d" % (
-                                        sign,
-                                        h,
-                                        m,
-                                        s,
-                                        u,
-                                    )
-                                elif s:
-                                    z_replace = "%c%02d%02d%02d" % (sign, h, m, s)
-                                else:
-                                    z_replace = "%c%02d%02d" % (sign, h, m)
-                    assert "%" not in z_replace
-                    newformat.append(z_replace)
-                elif ch == "Z":
-                    if Z_replace is None:
-                        Z_replace = ""
-                        if hasattr(time_obj, "tzname"):
-                            s = time_obj.tzname()
-                            if s is not None:
-                                # strftime is going to have at this: escape %
-                                Z_replace = s.replace("%", "%%")
-                    newformat.append(Z_replace)
-                else:
-                    push("%")
-                    push(ch)
-            else:
-                push("%")
-        else:
-            push(ch)
-    newformat = "".join(newformat)
-    return _time.strftime(newformat, timetuple)
-
-
 # Utility functions - timezone
 def _check_tzname(name):
     """"Just raise TypeError if the arg isn't None or a string."""
@@ -370,7 +300,7 @@ def _ord2ymd(n):
 class timedelta:
     """A timedelta object represents a duration, the difference between two dates or times."""
 
-    # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-arguments, too-many-locals, too-many-statements
     def __new__(
         cls,
         days=0,
@@ -859,13 +789,15 @@ class timezone(tzinfo):
             raise ValueError(
                 "offset must be a timedelta" " representing a whole number of minutes"
             )
+        cls._offset = offset
+        cls._name = name
         return cls._create(offset, name)
 
-    # pylint: disable=protected-access
+    # pylint: disable=protected-access, bad-super-call
     @classmethod
     def _create(cls, offset, name=None):
         """High-level creation for a timezone object."""
-        self = tzinfo.__new__(cls)
+        self = super(tzinfo, cls).__new__(cls)
         self._offset = offset
         self._name = name
         return self
@@ -998,15 +930,6 @@ class time:
     # For a time t, str(t) is equivalent to t.isoformat()
     __str__ = isoformat
 
-    def strftime(self, fmt):
-        """Format using strftime().  The date part of the timestamp passed
-        to underlying strftime should not be used.
-        """
-        # The year must be >= 1000 else Python's strftime implementation
-        # can raise a bogus exception.
-        timetuple = (1900, 1, 1, self._hour, self._minute, self._second, 0, 1, -1)
-        return _wrap_strftime(self, fmt, timetuple)
-
     def utcoffset(self):
         """Return the timezone offset in minutes east of UTC (negative west of
         UTC)."""
@@ -1123,8 +1046,6 @@ class time:
     def __format__(self, fmt):
         if not isinstance(fmt, str):
             raise TypeError("must be str, not %s" % type(fmt).__name__)
-        if len(fmt) != 0:
-            return self.strftime(fmt)
         return str(self)
 
     def __repr__(self):
@@ -1259,7 +1180,11 @@ class datetime(date):
             t -= 1
             us += 1000000
 
-        converter = _time.gmtime if utc else _time.localtime
+        if utc:
+            raise NotImplementedError(
+                "CircuitPython does not currently implement time.gmtime."
+            )
+        converter = _time.localtime
         struct_time = converter(t)
         ss = min(struct_time[5], 59)  # clamp out leap seconds if the platform has them
         result = cls(
@@ -1272,39 +1197,7 @@ class datetime(date):
             us,
             tz,
         )
-        if tz is None:
-            # As of version 2015f max fold in IANA database is
-            # 23 hours at 1969-09-30 13:00:00 in Kwajalein.
-            # Let's probe 24 hours in the past to detect a transition:
-            max_fold_seconds = 24 * 3600
-
-            struct_time = converter(t - max_fold_seconds)[:6]
-            probe1 = cls(
-                struct_time[0],
-                struct_time[1],
-                struct_time[2],
-                struct_time[3],
-                struct_time[4],
-                struct_time[5],
-                us,
-                tz,
-            )
-            trans = result - probe1 - timedelta(0, max_fold_seconds)
-            if trans.days < 0:
-                struct_time = converter(t + trans // timedelta(0, 1))[:6]
-                probe2 = cls(
-                    struct_time[0],
-                    struct_time[1],
-                    struct_time[2],
-                    struct_time[3],
-                    struct_time[4],
-                    struct_time[5],
-                    us,
-                    tz,
-                )
-                if probe2 == result:
-                    result._fold = 1
-        else:
+        if tz is not None:
             result = tz.fromutc(result)
         return result
 
@@ -1316,7 +1209,7 @@ class datetime(date):
     @classmethod
     def now(cls, timezone=None):
         """Return the current local date and time."""
-        return cls.fromtimestamp(_time.time(), timezone)
+        return cls.fromtimestamp(_time.time(), tz=timezone)
 
     @classmethod
     def utcfromtimestamp(cls, timestamp):
@@ -1449,19 +1342,18 @@ class datetime(date):
         """Return the day of the week as an integer, where Monday is 0 and Sunday is 6."""
         return (self.toordinal() + 6) % 7
 
-    def strftime(self, fmt):
-        """Format using strftime().  The date part of the timestamp passed
-        to underlying strftime should not be used.
-        """
-        # The year must be >= 1000 else Python's strftime implementation
-        # can raise a bogus exception.
-        timetuple = (1900, 1, 1, self._hour, self._minute, self._second, 0, 1, -1)
-        return _wrap_strftime(self, fmt, timetuple)
-
-    def __format__(self, fmt):
-        if len(fmt) != 0:
-            return self.strftime(fmt)
-        return str(self)
+    def ctime(self):
+        "Return string representing the datetime."
+        weekday = self.toordinal() % 7 or 7
+        return "%s %s %2d %02d:%02d:%02d %04d" % (
+            _DAYNAMES[weekday],
+            _MONTHNAMES[self._month],
+            self._day,
+            self._hour,
+            self._minute,
+            self._second,
+            self._year,
+        )
 
     def __repr__(self):
         """Convert to formal string, for repr()."""
