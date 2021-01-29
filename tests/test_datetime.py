@@ -506,6 +506,7 @@ class TestDateTime(TestDate):
         got = self.theclass.fromtimestamp(ts)
         self.verify_field_equality(expected, got)
 
+    @unittest.skip("gmtime not implemented in CircuitPython")
     def test_utcfromtimestamp(self):
         import time
 
@@ -514,8 +515,6 @@ class TestDateTime(TestDate):
         got = self.theclass.utcfromtimestamp(ts)
         self.verify_field_equality(expected, got)
 
-    # TODO
-    @unittest.skip("Wait until we bring in UTCOFFSET")
     # Run with US-style DST rules: DST begins 2 a.m. on second Sunday in
     # March (M3.2.0) and ends 2 a.m. on first Sunday in November (M11.1.0).
     @support.run_with_tz("EST+05EDT,M3.2.0,M11.1.0")
@@ -547,8 +546,6 @@ class TestDateTime(TestDate):
             else:
                 self.assertEqual(self.theclass.fromtimestamp(s), t)
 
-    # TODO
-    @unittest.skip("Hold off on this test until we bring timezone in")
     def test_timestamp_aware(self):
         t = self.theclass(1970, 1, 1, tzinfo=timezone.utc)
         self.assertEqual(t.timestamp(), 0.0)
@@ -559,6 +556,7 @@ class TestDateTime(TestDate):
         )
         self.assertEqual(t.timestamp(), 18000 + 3600 + 2 * 60 + 3 + 4 * 1e-6)
 
+    @unittest.skip("Not implemented - gmtime")
     @support.run_with_tz("MSK-03")  # Something east of Greenwich
     def test_microsecond_rounding(self):
         for fts in [self.theclass.fromtimestamp, self.theclass.utcfromtimestamp]:
@@ -599,8 +597,7 @@ class TestDateTime(TestDate):
             self.assertEqual(t.second, 0)
             self.assertEqual(t.microsecond, 7812)
 
-    # TODO
-    @unittest.skip("timezone not implemented")
+    @unittest.skip("gmtime not implemented in CircuitPython")
     def test_timestamp_limits(self):
         # minimum timestamp
         min_dt = self.theclass.min.replace(tzinfo=timezone.utc)
@@ -649,6 +646,7 @@ class TestDateTime(TestDate):
         for insane in -1e200, 1e200:
             self.assertRaises(OverflowError, self.theclass.fromtimestamp, insane)
 
+    @unittest.skip("Not implemented - gmtime")
     def test_insane_utcfromtimestamp(self):
         # It's possible that some platform maps time_t to double,
         # and that this test will fail there.  This test should
@@ -657,7 +655,7 @@ class TestDateTime(TestDate):
         for insane in -1e200, 1e200:
             self.assertRaises(OverflowError, self.theclass.utcfromtimestamp, insane)
 
-    @unittest.skip("Not implemented - utcnow")
+    @unittest.skip("gmtime not implemented in CircuitPython")
     def test_utcnow(self):
         import time
 
@@ -672,7 +670,7 @@ class TestDateTime(TestDate):
             # Else try again a few times.
         self.assertLessEqual(abs(from_timestamp - from_now), tolerance)
 
-    @unittest.skip("Not implemented - strptime")
+    @unittest.skip("gmtime not implemented in CircuitPython")
     def test_strptime(self):
         string = "2004-12-01 13:02:47.197"
         format = "%Y-%m-%d %H:%M:%S.%f"
@@ -735,7 +733,7 @@ class TestDateTime(TestDate):
         with self.assertRaises(ValueError):
             strptime("-000", "%z")
 
-    @unittest.skip("Not implemented - strptime")
+    @unittest.skip("gmtime not implemented in CircuitPython")
     def test_strptime_single_digit(self):
         # bpo-34903: Check that single digit dates and times are allowed.
 
@@ -798,7 +796,7 @@ class TestDateTime(TestDate):
         self.assertEqual(tt.tm_yday, t.toordinal() - date(t.year, 1, 1).toordinal() + 1)
         self.assertEqual(tt.tm_isdst, -1)
 
-    @unittest.skip("Not implemented - strftime")
+    @unittest.skip("gmtime not implemented in CircuitPython")
     def test_more_strftime(self):
         # This tests fields beyond those tested by the TestDate.test_strftime.
         t = self.theclass(2004, 12, 31, 6, 22, 33, 47)

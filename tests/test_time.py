@@ -220,6 +220,7 @@ class TestTime(HarmlessMixedComparison, unittest.TestCase):
         t = self.theclass(second=1)
         self.assertRaises(TypeError, t.isoformat, foo=3)
 
+    @unittest.skip("strftime not implemented for CircuitPython time objects")
     def test_strftime(self):
         t = self.theclass(1, 2, 3, 4)
         self.assertEqual(t.strftime("%H %M %S %f"), "01 02 03 000004")
@@ -231,6 +232,7 @@ class TestTime(HarmlessMixedComparison, unittest.TestCase):
         except UnicodeEncodeError:
             pass
 
+    @unittest.skip("strftime not implemented for CircuitPython time objects")
     def test_format(self):
         t = self.theclass(1, 2, 3, 4)
         self.assertEqual(t.__format__(""), str(t))
