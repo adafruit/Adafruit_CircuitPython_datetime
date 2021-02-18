@@ -29,6 +29,7 @@ Implementation Notes
 # pylint: disable=too-many-lines
 import time as _time
 import math as _math
+import re as _re
 from micropython import const
 
 __version__ = "0.0.0-auto.0"
@@ -658,6 +659,18 @@ class date:
         return cls(y, m, d)
 
     @classmethod
+    def fromisoformat(cls, date_string):
+        """Return a date object constructed from an ISO date format."""
+        match = _re.match(
+            r"([0-9][0-9][0-9][0-9])-([0-9][0-9])-([0-9][0-9])", date_string
+        )
+        if match:
+            y, m, d = int(match.group(1)), int(match.group(2)), int(match.group(3))
+            return cls(y, m, d)
+        else:
+            raise ValueError("Not a valid ISO Date")
+
+    @classmethod
     def today(cls):
         """Return the current local date."""
         return cls.fromtimestamp(_time.time())
@@ -1205,6 +1218,35 @@ class datetime(date):
     @classmethod
     def fromtimestamp(cls, timestamp, tz=None):
         return cls._fromtimestamp(timestamp, tz is not None, tz)
+
+    @classmethod
+    def fromisoformat(cls, date_string, tz=None):
+        """Return a date object constructed from an ISO date format.
+        YYYY-MM-DD[*HH[:MM[:SS[.fff[fff]]]][+HH:MM[:SS[.ffffff]]]]
+        """
+        match = _re.match(
+            r"([0-9][0-9][0-9][0-9])-([0-9][0-9])-([0-9][0-9])(T([0-9][0-9]))?(:([0-9][0-9]))?(:([0-9][0-9]))?(\.[0-9][0-9][0-9][0-9][0-9][0-9])?",
+            date_string,
+        )
+        if match:
+            y, m, d = int(match.group(1)), int(match.group(2)), int(match.group(3))
+            hh = int(match.group(5)) if match.group(5) else 0
+            mm = int(match.group(5)) if match.group(7) else 0
+            ss = int(match.group(9)) if match.group(9) else 0
+            us = round((float("0" + match.group(10)) if match.group(10) else 0) * 1e6)
+            result = cls(
+                y,
+                m,
+                d,
+                hh,
+                mm,
+                ss,
+                us,
+                tz,
+            )
+            return result
+        else:
+            raise ValueError("Not a valid ISO Date")
 
     @classmethod
     def now(cls, timezone=None):
