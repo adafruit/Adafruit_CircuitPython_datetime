@@ -667,8 +667,7 @@ class date:
         if match:
             y, m, d = int(match.group(1)), int(match.group(2)), int(match.group(3))
             return cls(y, m, d)
-        else:
-            raise ValueError("Not a valid ISO Date")
+        raise ValueError("Not a valid ISO Date")
 
     @classmethod
     def today(cls):
@@ -1225,7 +1224,10 @@ class datetime(date):
         YYYY-MM-DD[*HH[:MM[:SS[.fff[fff]]]][+HH:MM[:SS[.ffffff]]]]
         """
         match = _re.match(
-            r"([0-9][0-9][0-9][0-9])-([0-9][0-9])-([0-9][0-9])(T([0-9][0-9]))?(:([0-9][0-9]))?(:([0-9][0-9]))?(\.[0-9][0-9][0-9][0-9][0-9][0-9])?",
+            (
+                r"([0-9][0-9][0-9][0-9])-([0-9][0-9])-([0-9][0-9])(T([0-9][0-9]))?(:([0-9][0-9]))"
+                r"?(:([0-9][0-9]))?(\.[0-9][0-9][0-9][0-9][0-9][0-9])?"
+            ),
             date_string,
         )
         if match:
@@ -1245,8 +1247,7 @@ class datetime(date):
                 tz,
             )
             return result
-        else:
-            raise ValueError("Not a valid ISO Date")
+        raise ValueError("Not a valid ISO Date")
 
     @classmethod
     def now(cls, timezone=None):
