@@ -1161,8 +1161,6 @@ class TestDateTime(TestDate):
                         dt_rt = self.theclass.fromisoformat(dtstr)
                         self.assertEqual(dt, dt_rt)
 
-    # TODO
-    @unittest.skip("fromisoformat not implemented")
     def test_fromisoformat_fails_datetime(self):
         # Test that fromisoformat() fails on invalid values
         bad_strs = [
@@ -1219,7 +1217,6 @@ class TestDateTime(TestDate):
 
         self.assertIs(dt.tzinfo, timezone.utc)
 
-    # TODO
     @unittest.skip("fromisoformat not implemented")
     def test_fromisoformat_subclass(self):
         class DateTimeSubclass(self.theclass):

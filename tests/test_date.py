@@ -88,6 +88,19 @@ class TestDate(unittest.TestCase):
         self.assertEqual(d.month, month)
         self.assertEqual(d.day, day)
 
+    def test_fromisoformat(self):
+        # Try an arbitrary fixed value.
+        iso_date_string = "1999-09-19"
+        d = cpy_date.fromisoformat(iso_date_string)
+        self.assertEqual(d.year, 1999)
+        self.assertEqual(d.month, 9)
+        self.assertEqual(d.day, 19)
+
+    def test_fromisoformat_bad_formats(self):
+        # Try an arbitrary fixed value.
+        self.assertRaises(ValueError, cpy_date.fromisoformat, "99-09-19")
+        self.assertRaises(ValueError, cpy_date.fromisoformat, "1999-13-19")
+
     # TODO: Test this when timedelta is added in
     @unittest.skip("Skip for CircuitPython - timedelta() not yet implemented.")
     def test_today(self):

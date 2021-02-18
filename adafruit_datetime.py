@@ -665,12 +665,12 @@ class date:
 
         """
         match = _re.match(
-            r"([0-9][0-9][0-9][0-9])-([0-9][0-9])-([0-9][0-9])", date_string
+            r"([0-9][0-9][0-9][0-9])-([0-9][0-9])-([0-9][0-9])$", date_string
         )
         if match:
             y, m, d = int(match.group(1)), int(match.group(2)), int(match.group(3))
             return cls(y, m, d)
-        raise ValueError("Not a valid ISO Date")
+        raise ValueError("Invalid isoformat string")
 
     @classmethod
     def today(cls):
@@ -921,6 +921,90 @@ class time:
         the time constructor, or None if none was passed.
         """
         return self._tzinfo
+
+    @staticmethod
+    def _parse_iso_string(string_to_parse, segments):
+        results = []
+
+        for regex in segments:
+            match = _re.match(regex, string_to_parse)
+            if match:
+                for grp in range(regex.count("(")):
+                    results.append(int(match.group(grp + 1)))
+                string_to_parse = string_to_parse[len(match.group(0)) :]
+            elif string_to_parse:  # Only raise an error if we're not done yet
+                raise ValueError("Invalid isoformat string")
+        if string_to_parse:
+            raise ValueError("Invalid isoformat string")
+        return results
+
+    # pylint: disable=too-many-locals
+    @classmethod
+    def fromisoformat(cls, time_string):
+        """Return a time object constructed from an ISO date format.
+        Valid format is ``HH[:MM[:SS[.fff[fff]]]][+HH:MM[:SS[.ffffff]]]``
+
+        """
+        match = _re.match(r"(.*)[\-\+]", time_string)
+        offset_string = None
+        if match:
+            offset_string = time_string[len(match.group(1)) :]
+            time_string = match.group(1)
+
+        time_segments = (
+            r"([0-9][0-9])",
+            r":([0-9][0-9])",
+            r":([0-9][0-9])",
+            r"\.([0-9][0-9][0-9])",
+            r"([0-9][0-9][0-9])",
+        )
+        offset_segments = (
+            r"([\-\+][0-9][0-9]):([0-9][0-9])",
+            r":([0-9][0-9])",
+            r"\.([0-9][0-9][0-9][0-9][0-9][0-9])",
+        )
+
+        results = cls._parse_iso_string(time_string, time_segments)
+        if len(results) < 1:
+            raise ValueError("Invalid isoformat string")
+        if len(results) < len(time_segments):
+            results += [None] * (len(time_segments) - len(results))
+        if offset_string:
+            results += cls._parse_iso_string(offset_string, offset_segments)
+
+        hh = results[0]
+        mm = results[1] if len(results) >= 2 and results[1] is not None else 0
+        ss = results[2] if len(results) >= 3 and results[2] is not None else 0
+        us = 0
+        if len(results) >= 4 and results[3] is not None:
+            us += results[3] * 1000
+        if len(results) >= 5 and results[4] is not None:
+            us += results[4]
+        tz = None
+        if len(results) >= 7:
+            offset_hh = results[5]
+            multiplier = -1 if offset_hh < 0 else 1
+            offset_mm = results[6] * multiplier
+            offset_ss = (results[7] if len(results) >= 8 else 0) * multiplier
+            offset_us = (results[8] if len(results) >= 9 else 0) * multiplier
+            offset = timedelta(
+                hours=offset_hh,
+                minutes=offset_mm,
+                seconds=offset_ss,
+                microseconds=offset_us,
+            )
+            tz = timezone(offset, name="utcoffset")
+
+        result = cls(
+            hh,
+            mm,
+            ss,
+            us,
+            tz,
+        )
+        return result
+
+    # pylint: enable=too-many-locals
 
     # Instance methods
     def isoformat(self, timespec="auto"):
@@ -1222,41 +1306,20 @@ class datetime(date):
         return cls._fromtimestamp(timestamp, tz is not None, tz)
 
     @classmethod
-    def fromisoformat(cls, date_string, tz=None):
+    def fromisoformat(cls, date_string):
         """Return a datetime object constructed from an ISO date format.
-        Valid format is ``YYYY-MM-DD[*HH[:MM[:SS[.fff[fff]]]]]``
+        Valid format is ``YYYY-MM-DD[*HH[:MM[:SS[.fff[fff]]]][+HH:MM[:SS[.ffffff]]]]``
 
         """
-        match = _re.match(
-            (
-                r"([0-9][0-9][0-9][0-9])-([0-9][0-9])-([0-9][0-9])(T([0-9][0-9]))?(:([0-9][0-9]))?"
-                r"(:([0-9][0-9]))?(\.([0-9][0-9][0-9])([0-9][0-9][0-9])?)?"
-            ),
-            date_string,
-        )
-        if match:
-            y, m, d = int(match.group(1)), int(match.group(2)), int(match.group(3))
-            hh = int(match.group(5)) if match.group(5) else 0
-            mm = int(match.group(5)) if match.group(7) else 0
-            ss = int(match.group(9)) if match.group(9) else 0
-            us = 0
-            print(match.group(10))
-            if match.group(11):
-                us += int(match.group(11)) * 1000
-            if match.group(12):
-                us += int(match.group(12))
-            result = cls(
-                y,
-                m,
-                d,
-                hh,
-                mm,
-                ss,
-                us,
-                tz,
-            )
-            return result
-        raise ValueError("Not a valid ISO Date")
+        if "T" in date_string:
+            date_string, time_string = date_string.split("T")
+            dateval = date.fromisoformat(date_string)
+            timeval = time.fromisoformat(time_string)
+        else:
+            dateval = date.fromisoformat(date_string)
+            timeval = time()
+
+        return cls.combine(dateval, timeval)
 
     @classmethod
     def now(cls, timezone=None):
