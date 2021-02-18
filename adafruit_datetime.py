@@ -661,7 +661,7 @@ class date:
     @classmethod
     def fromisoformat(cls, date_string):
         """Return a date object constructed from an ISO date format.
-        Valid format is YYYY-MM-DD
+        Valid format is ``YYYY-MM-DD``
 
         """
         match = _re.match(
@@ -1224,7 +1224,7 @@ class datetime(date):
     @classmethod
     def fromisoformat(cls, date_string, tz=None):
         """Return a datetime object constructed from an ISO date format.
-        Valid format is YYYY-MM-DD[*HH[:MM[:SS[.fff[fff]]]]]
+        Valid format is ``YYYY-MM-DD[*HH[:MM[:SS[.fff[fff]]]]]``
 
         """
         match = _re.match(
