@@ -1262,6 +1262,11 @@ class datetime(date):
         """
         return self._tzinfo
 
+    @property
+    def fold(self):
+        """Fold."""
+        return self._fold
+
     # Class methods
 
     # pylint: disable=protected-access
@@ -1311,8 +1316,10 @@ class datetime(date):
         Valid format is ``YYYY-MM-DD[*HH[:MM[:SS[.fff[fff]]]][+HH:MM[:SS[.ffffff]]]]``
 
         """
-        if "T" in date_string:
-            date_string, time_string = date_string.split("T")
+        time_string = None
+        if len(date_string) > 10:
+            time_string = date_string[11:]
+            date_string = date_string[:10]
             dateval = date.fromisoformat(date_string)
             timeval = time.fromisoformat(time_string)
         else:

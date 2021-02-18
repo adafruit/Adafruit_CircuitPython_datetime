@@ -1033,8 +1033,6 @@ class TestDateTime(TestDate):
                 self.assertIsInstance(dt, DateTimeSubclass)
                 self.assertEqual(dt.extra, 7)
 
-    # TODO
-    @unittest.skip("timezone not implemented")
     def test_fromisoformat_datetime(self):
         # Test that isoformat() is reversible
         base_dates = [(1, 1, 1), (1900, 1, 1), (2004, 11, 12), (2017, 5, 30)]
