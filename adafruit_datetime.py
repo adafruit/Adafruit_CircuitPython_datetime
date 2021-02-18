@@ -1224,13 +1224,13 @@ class datetime(date):
     @classmethod
     def fromisoformat(cls, date_string, tz=None):
         """Return a datetime object constructed from an ISO date format.
-        Valid format is YYYY-MM-DD[*HH[:MM[:SS[.fff[fff]]]][+HH:MM[:SS[.ffffff]]]]
+        Valid format is YYYY-MM-DD[*HH[:MM[:SS[.fff[fff]]]]]
 
         """
         match = _re.match(
             (
-                r"([0-9][0-9][0-9][0-9])-([0-9][0-9])-([0-9][0-9])(T([0-9][0-9]))?(:([0-9][0-9]))"
-                r"?(:([0-9][0-9]))?(\.[0-9][0-9][0-9][0-9][0-9][0-9])?"
+                r"([0-9][0-9][0-9][0-9])-([0-9][0-9])-([0-9][0-9])(T([0-9][0-9]))?(:([0-9][0-9]))?"
+                r"(:([0-9][0-9]))?(\.([0-9][0-9][0-9])([0-9][0-9][0-9])?)?"
             ),
             date_string,
         )
@@ -1239,7 +1239,12 @@ class datetime(date):
             hh = int(match.group(5)) if match.group(5) else 0
             mm = int(match.group(5)) if match.group(7) else 0
             ss = int(match.group(9)) if match.group(9) else 0
-            us = round((float("0" + match.group(10)) if match.group(10) else 0) * 1e6)
+            us = 0
+            print(match.group(10))
+            if match.group(11):
+                us += int(match.group(11)) * 1000
+            if match.group(12):
+                us += int(match.group(12))
             result = cls(
                 y,
                 m,
