@@ -63,6 +63,8 @@ _MONTHNAMES = (
 )
 _DAYNAMES = (None, "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
 
+_INVALID_ISO_ERROR = "Invalid isoformat string: '{}'"
+
 # Utility functions - universal
 def _cmp(obj_x, obj_y):
     return 0 if obj_x == obj_y else 1 if obj_x > obj_y else -1
@@ -670,7 +672,7 @@ class date:
         if match:
             y, m, d = int(match.group(1)), int(match.group(2)), int(match.group(3))
             return cls(y, m, d)
-        raise ValueError("Invalid isoformat string")
+        raise ValueError(_INVALID_ISO_ERROR.format(date_string))
 
     @classmethod
     def today(cls):
@@ -926,16 +928,17 @@ class time:
     def _parse_iso_string(string_to_parse, segments):
         results = []
 
+        remaining_string = string_to_parse
         for regex in segments:
-            match = _re.match(regex, string_to_parse)
+            match = _re.match(regex, remaining_string)
             if match:
                 for grp in range(regex.count("(")):
                     results.append(int(match.group(grp + 1)))
-                string_to_parse = string_to_parse[len(match.group(0)) :]
-            elif string_to_parse:  # Only raise an error if we're not done yet
-                raise ValueError("Invalid isoformat string")
-        if string_to_parse:
-            raise ValueError("Invalid isoformat string")
+                remaining_string = remaining_string[len(match.group(0)) :]
+            elif remaining_string:  # Only raise an error if we're not done yet
+                raise ValueError()
+        if remaining_string:
+            raise ValueError()
         return results
 
     # pylint: disable=too-many-locals
@@ -945,6 +948,8 @@ class time:
         Valid format is ``HH[:MM[:SS[.fff[fff]]]][+HH:MM[:SS[.ffffff]]]``
 
         """
+        # Store the original string in an error message
+        original_string = time_string
         match = _re.match(r"(.*)[\-\+]", time_string)
         offset_string = None
         if match:
@@ -964,13 +969,16 @@ class time:
             r"\.([0-9][0-9][0-9][0-9][0-9][0-9])",
         )
 
-        results = cls._parse_iso_string(time_string, time_segments)
-        if len(results) < 1:
-            raise ValueError("Invalid isoformat string")
-        if len(results) < len(time_segments):
-            results += [None] * (len(time_segments) - len(results))
-        if offset_string:
-            results += cls._parse_iso_string(offset_string, offset_segments)
+        try:
+            results = cls._parse_iso_string(time_string, time_segments)
+            if len(results) < 1:
+                raise ValueError(_INVALID_ISO_ERROR.format(original_string))
+            if len(results) < len(time_segments):
+                results += [None] * (len(time_segments) - len(results))
+            if offset_string:
+                results += cls._parse_iso_string(offset_string, offset_segments)
+        except ValueError as error:
+            raise ValueError(_INVALID_ISO_ERROR.format(original_string)) from error
 
         hh = results[0]
         mm = results[1] if len(results) >= 2 and results[1] is not None else 0
@@ -1316,15 +1324,20 @@ class datetime(date):
         Valid format is ``YYYY-MM-DD[*HH[:MM[:SS[.fff[fff]]]][+HH:MM[:SS[.ffffff]]]]``
 
         """
+        original_string = date_string
+
         time_string = None
-        if len(date_string) > 10:
-            time_string = date_string[11:]
-            date_string = date_string[:10]
-            dateval = date.fromisoformat(date_string)
-            timeval = time.fromisoformat(time_string)
-        else:
-            dateval = date.fromisoformat(date_string)
-            timeval = time()
+        try:
+            if len(date_string) > 10:
+                time_string = date_string[11:]
+                date_string = date_string[:10]
+                dateval = date.fromisoformat(date_string)
+                timeval = time.fromisoformat(time_string)
+            else:
+                dateval = date.fromisoformat(date_string)
+                timeval = time()
+        except ValueError as error:
+            raise ValueError(_INVALID_ISO_ERROR.format(original_string)) from error
 
         return cls.combine(dateval, timeval)
 
