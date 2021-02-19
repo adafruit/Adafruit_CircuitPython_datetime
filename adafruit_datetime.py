@@ -29,6 +29,7 @@ Implementation Notes
 # pylint: disable=too-many-lines
 import time as _time
 import math as _math
+import re as _re
 from micropython import const
 
 __version__ = "0.0.0-auto.0"
@@ -61,6 +62,8 @@ _MONTHNAMES = (
     "Dec",
 )
 _DAYNAMES = (None, "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+
+_INVALID_ISO_ERROR = "Invalid isoformat string: '{}'"
 
 # Utility functions - universal
 def _cmp(obj_x, obj_y):
@@ -658,6 +661,20 @@ class date:
         return cls(y, m, d)
 
     @classmethod
+    def fromisoformat(cls, date_string):
+        """Return a date object constructed from an ISO date format.
+        Valid format is ``YYYY-MM-DD``
+
+        """
+        match = _re.match(
+            r"([0-9][0-9][0-9][0-9])-([0-9][0-9])-([0-9][0-9])$", date_string
+        )
+        if match:
+            y, m, d = int(match.group(1)), int(match.group(2)), int(match.group(3))
+            return cls(y, m, d)
+        raise ValueError(_INVALID_ISO_ERROR.format(date_string))
+
+    @classmethod
     def today(cls):
         """Return the current local date."""
         return cls.fromtimestamp(_time.time())
@@ -906,6 +923,96 @@ class time:
         the time constructor, or None if none was passed.
         """
         return self._tzinfo
+
+    @staticmethod
+    def _parse_iso_string(string_to_parse, segments):
+        results = []
+
+        remaining_string = string_to_parse
+        for regex in segments:
+            match = _re.match(regex, remaining_string)
+            if match:
+                for grp in range(regex.count("(")):
+                    results.append(int(match.group(grp + 1)))
+                remaining_string = remaining_string[len(match.group(0)) :]
+            elif remaining_string:  # Only raise an error if we're not done yet
+                raise ValueError()
+        if remaining_string:
+            raise ValueError()
+        return results
+
+    # pylint: disable=too-many-locals
+    @classmethod
+    def fromisoformat(cls, time_string):
+        """Return a time object constructed from an ISO date format.
+        Valid format is ``HH[:MM[:SS[.fff[fff]]]][+HH:MM[:SS[.ffffff]]]``
+
+        """
+        # Store the original string in an error message
+        original_string = time_string
+        match = _re.match(r"(.*)[\-\+]", time_string)
+        offset_string = None
+        if match:
+            offset_string = time_string[len(match.group(1)) :]
+            time_string = match.group(1)
+
+        time_segments = (
+            r"([0-9][0-9])",
+            r":([0-9][0-9])",
+            r":([0-9][0-9])",
+            r"\.([0-9][0-9][0-9])",
+            r"([0-9][0-9][0-9])",
+        )
+        offset_segments = (
+            r"([\-\+][0-9][0-9]):([0-9][0-9])",
+            r":([0-9][0-9])",
+            r"\.([0-9][0-9][0-9][0-9][0-9][0-9])",
+        )
+
+        try:
+            results = cls._parse_iso_string(time_string, time_segments)
+            if len(results) < 1:
+                raise ValueError(_INVALID_ISO_ERROR.format(original_string))
+            if len(results) < len(time_segments):
+                results += [None] * (len(time_segments) - len(results))
+            if offset_string:
+                results += cls._parse_iso_string(offset_string, offset_segments)
+        except ValueError as error:
+            raise ValueError(_INVALID_ISO_ERROR.format(original_string)) from error
+
+        hh = results[0]
+        mm = results[1] if len(results) >= 2 and results[1] is not None else 0
+        ss = results[2] if len(results) >= 3 and results[2] is not None else 0
+        us = 0
+        if len(results) >= 4 and results[3] is not None:
+            us += results[3] * 1000
+        if len(results) >= 5 and results[4] is not None:
+            us += results[4]
+        tz = None
+        if len(results) >= 7:
+            offset_hh = results[5]
+            multiplier = -1 if offset_hh < 0 else 1
+            offset_mm = results[6] * multiplier
+            offset_ss = (results[7] if len(results) >= 8 else 0) * multiplier
+            offset_us = (results[8] if len(results) >= 9 else 0) * multiplier
+            offset = timedelta(
+                hours=offset_hh,
+                minutes=offset_mm,
+                seconds=offset_ss,
+                microseconds=offset_us,
+            )
+            tz = timezone(offset, name="utcoffset")
+
+        result = cls(
+            hh,
+            mm,
+            ss,
+            us,
+            tz,
+        )
+        return result
+
+    # pylint: enable=too-many-locals
 
     # Instance methods
     def isoformat(self, timespec="auto"):
@@ -1163,6 +1270,11 @@ class datetime(date):
         """
         return self._tzinfo
 
+    @property
+    def fold(self):
+        """Fold."""
+        return self._fold
+
     # Class methods
 
     # pylint: disable=protected-access
@@ -1205,6 +1317,29 @@ class datetime(date):
     @classmethod
     def fromtimestamp(cls, timestamp, tz=None):
         return cls._fromtimestamp(timestamp, tz is not None, tz)
+
+    @classmethod
+    def fromisoformat(cls, date_string):
+        """Return a datetime object constructed from an ISO date format.
+        Valid format is ``YYYY-MM-DD[*HH[:MM[:SS[.fff[fff]]]][+HH:MM[:SS[.ffffff]]]]``
+
+        """
+        original_string = date_string
+
+        time_string = None
+        try:
+            if len(date_string) > 10:
+                time_string = date_string[11:]
+                date_string = date_string[:10]
+                dateval = date.fromisoformat(date_string)
+                timeval = time.fromisoformat(time_string)
+            else:
+                dateval = date.fromisoformat(date_string)
+                timeval = time()
+        except ValueError as error:
+            raise ValueError(_INVALID_ISO_ERROR.format(original_string)) from error
+
+        return cls.combine(dateval, timeval)
 
     @classmethod
     def now(cls, timezone=None):

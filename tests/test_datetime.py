@@ -1033,8 +1033,6 @@ class TestDateTime(TestDate):
                 self.assertIsInstance(dt, DateTimeSubclass)
                 self.assertEqual(dt.extra, 7)
 
-    # TODO
-    @unittest.skip("timezone not implemented")
     def test_fromisoformat_datetime(self):
         # Test that isoformat() is reversible
         base_dates = [(1, 1, 1), (1900, 1, 1), (2004, 11, 12), (2017, 5, 30)]
@@ -1097,8 +1095,6 @@ class TestDateTime(TestDate):
                 dt_rt = self.theclass.fromisoformat(dtstr)
                 assert dt == dt_rt, dt_rt
 
-    # TODO
-    @unittest.skip("fromisoformat not implemented")
     def test_fromisoformat_separators(self):
         separators = [
             " ",
@@ -1120,8 +1116,6 @@ class TestDateTime(TestDate):
                 dt_rt = self.theclass.fromisoformat(dtstr)
                 self.assertEqual(dt, dt_rt)
 
-    # TODO
-    @unittest.skip("fromisoformat not implemented")
     def test_fromisoformat_ambiguous(self):
         # Test strings like 2018-01-31+12:15 (where +12:15 is not a time zone)
         separators = ["+", "-"]
@@ -1134,7 +1128,7 @@ class TestDateTime(TestDate):
                 self.assertEqual(dt, dt_rt)
 
     # TODO
-    @unittest.skip("fromisoformat not implemented")
+    @unittest.skip("_format_time not fully implemented")
     def test_fromisoformat_timespecs(self):
         datetime_bases = [(2009, 12, 4, 8, 17, 45, 123456), (2009, 12, 4, 8, 17, 45, 0)]
 
@@ -1161,8 +1155,6 @@ class TestDateTime(TestDate):
                         dt_rt = self.theclass.fromisoformat(dtstr)
                         self.assertEqual(dt, dt_rt)
 
-    # TODO
-    @unittest.skip("fromisoformat not implemented")
     def test_fromisoformat_fails_datetime(self):
         # Test that fromisoformat() fails on invalid values
         bad_strs = [
@@ -1201,14 +1193,12 @@ class TestDateTime(TestDate):
                 with self.assertRaises(ValueError):
                     self.theclass.fromisoformat(bad_str)
 
-    # TODO
-    @unittest.skip("fromisoformat not implemented")
     def test_fromisoformat_fails_surrogate(self):
         # Test that when fromisoformat() fails with a surrogate character as
         # the separator, the error message contains the original string
         dtstr = "2018-01-03\ud80001:0113"
 
-        with self.assertRaisesRegex(ValueError, re.escape(repr(dtstr))):
+        with self.assertRaisesRegex(ValueError, repr(dtstr)):
             self.theclass.fromisoformat(dtstr)
 
     # TODO
@@ -1219,8 +1209,6 @@ class TestDateTime(TestDate):
 
         self.assertIs(dt.tzinfo, timezone.utc)
 
-    # TODO
-    @unittest.skip("fromisoformat not implemented")
     def test_fromisoformat_subclass(self):
         class DateTimeSubclass(self.theclass):
             pass

@@ -6,6 +6,7 @@
 #                         All rights reserved.
 # SPDX-FileCopyrightText: 1991-1995 Stichting Mathematisch Centrum. All rights reserved.
 # SPDX-FileCopyrightText: 2021 Brent Rubell for Adafruit Industries
+# SPDX-FileCopyrightText: 2021 Melissa LeBlanc-Williams for Adafruit Industries
 # SPDX-License-Identifier: Python-2.0
 
 # Example of working with a `datetime` object
@@ -28,3 +29,8 @@ for it in tt:
     print(it)
 
 print("Today is: ", dt.ctime())
+
+iso_date_string = "2020-04-05T05:04:45.752301"
+print("Creating new datetime from ISO Date:", iso_date_string)
+isodate = datetime.fromisoformat(iso_date_string)
+print("Formatted back out as ISO Date: ", isodate.isoformat())
