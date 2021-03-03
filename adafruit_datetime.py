@@ -1283,7 +1283,10 @@ class datetime(date):
         """Construct a datetime from a POSIX timestamp (like time.time()).
         A timezone info object may be passed in as well.
         """
-        frac, t = _math.modf(t)
+        if isinstance(t, float):
+            frac, t = _math.modf(t)
+        else:
+            frac = 0
         us = round(frac * 1e6)
         if us >= 1000000:
             t += 1
