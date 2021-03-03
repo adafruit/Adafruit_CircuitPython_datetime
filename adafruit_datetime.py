@@ -1286,7 +1286,7 @@ class datetime(date):
         if isinstance(t, float):
             frac, t = _math.modf(t)
         else:
-            frac, t = 0, t
+            frac = 0
         us = round(frac * 1e6)
         if us >= 1000000:
             t += 1
