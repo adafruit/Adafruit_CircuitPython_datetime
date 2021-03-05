@@ -1284,16 +1284,18 @@ class datetime(date):
         A timezone info object may be passed in as well.
         """
         if isinstance(t, float):
-            frac, t = _math.modf(t)
+            frac = t - int(t)
+            t = int(t)
+            us = round(frac * 1e6)
+            if us >= 1000000:
+                t += 1
+                us -= 1000000
+            elif us < 0:
+                t -= 1
+                us += 1000000
         else:
             frac = 0
-        us = round(frac * 1e6)
-        if us >= 1000000:
-            t += 1
-            us -= 1000000
-        elif us < 0:
-            t -= 1
-            us += 1000000
+            us = 0
 
         if utc:
             raise NotImplementedError(
