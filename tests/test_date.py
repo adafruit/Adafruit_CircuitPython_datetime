@@ -8,6 +8,8 @@
 # SPDX-FileCopyrightText: 2021 Brent Rubell for Adafruit Industries
 # SPDX-License-Identifier: Python-2.0
 # Implements a subset of https://github.com/python/cpython/blob/master/Lib/test/datetimetester.py
+# NOTE: This test is based off CPython and therefore linting is disabled within this file.
+# pylint:disable=invalid-name, no-member, wrong-import-position, undefined-variable, no-self-use, cell-var-from-loop, misplaced-comparison-constant, too-many-public-methods
 import sys
 import unittest
 
