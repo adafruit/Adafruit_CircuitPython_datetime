@@ -9,8 +9,9 @@
 # SPDX-License-Identifier: Python-2.0
 # Implements a subset of https://github.com/python/cpython/blob/master/Lib/test/datetimetester.py
 # NOTE: This test is based off CPython and therefore linting is disabled within this file.
-# pylint:disable = invalid-name, no-member, cell-var-from-loop, unused-argument, no-self-use, too-few-public-methods, raise-missing-from, too-many-statements
+# pylint:disable = invalid-name, no-member, cell-var-from-loop, unused-argument, no-self-use, too-few-public-methods, raise-missing-from, too-many-statements, too-many-lines, undefined-variable, eval-used, import-outside-toplevel, redefined-outer-name, too-many-locals
 import sys
+
 # CircuitPython subset implementation
 sys.path.append("..")
 from adafruit_datetime import datetime as cpy_datetime
@@ -283,7 +284,9 @@ class TestDateTime(TestDate):
 
         # So test a case where that difference doesn't matter.
         t = self.theclass(2002, 3, 22, 18, 3, 5, 123)
-        self.assertEqual(t.ctime(), cpython_time.ctime(cpython_time.mktime(t.timetuple())))
+        self.assertEqual(
+            t.ctime(), cpython_time.ctime(cpython_time.mktime(t.timetuple()))
+        )
 
     def test_tz_independent_comparing(self):
         dt1 = self.theclass(2002, 3, 1, 9, 0, 0)

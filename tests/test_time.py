@@ -12,8 +12,10 @@
 # pylint:disable = invalid-name, no-member, cell-var-from-loop, unused-argument, no-self-use, too-few-public-methods, consider-using-enumerate, undefined-variable
 # CircuitPython subset implementation
 import sys
+
 sys.path.append("..")
 from adafruit_datetime import time as cpy_time
+
 # CPython standard implementation
 from datetime import time as cpython_time
 import unittest
