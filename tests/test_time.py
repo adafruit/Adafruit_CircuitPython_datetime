@@ -8,16 +8,18 @@
 # SPDX-FileCopyrightText: 2021 Brent Rubell for Adafruit Industries
 # SPDX-License-Identifier: Python-2.0
 # Implements a subset of https://github.com/python/cpython/blob/master/Lib/test/datetimetester.py
-import unittest
-
-# CPython standard implementation
-from datetime import time as cpython_time
-
+# NOTE: This test is based off CPython and therefore linting is disabled within this file.
+# pylint:disable=invalid-name, no-member, cell-var-from-loop, unused-argument, no-self-use, too-few-public-methods, consider-using-enumerate, undefined-variable, wrong-import-order, wrong-import-position
 # CircuitPython subset implementation
 import sys
 
 sys.path.append("..")
 from adafruit_datetime import time as cpy_time
+
+# CPython standard implementation
+from datetime import time as cpython_time
+import unittest
+
 
 # An arbitrary collection of objects of non-datetime types, for testing
 # mixed-type comparisons.

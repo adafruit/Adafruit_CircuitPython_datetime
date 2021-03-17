@@ -8,14 +8,9 @@
 # SPDX-FileCopyrightText: 2021 Brent Rubell for Adafruit Industries
 # SPDX-License-Identifier: Python-2.0
 # Implements a subset of https://github.com/python/cpython/blob/master/Lib/test/datetimetester.py
+# NOTE: This test is based off CPython and therefore linting is disabled within this file.
+# pylint:disable=invalid-name, no-member, cell-var-from-loop, unused-argument, no-self-use, too-few-public-methods, raise-missing-from, too-many-statements, too-many-lines, undefined-variable, eval-used, import-outside-toplevel, redefined-outer-name, too-many-locals, reimported, protected-access, wrong-import-position, consider-using-enumerate, wrong-import-order, redefined-builtin, too-many-public-methods
 import sys
-import unittest
-from test import support
-from test_date import TestDate
-
-# CPython standard implementation
-from datetime import datetime as cpython_datetime
-from datetime import MINYEAR, MAXYEAR
 
 # CircuitPython subset implementation
 sys.path.append("..")
@@ -25,6 +20,15 @@ from adafruit_datetime import tzinfo
 from adafruit_datetime import date
 from adafruit_datetime import time
 from adafruit_datetime import timezone
+
+import unittest
+from test import support
+from test_date import TestDate
+
+# CPython standard implementation
+from datetime import datetime as cpython_datetime
+from datetime import MINYEAR, MAXYEAR
+
 
 # TZinfo test
 class FixedOffset(tzinfo):
@@ -268,7 +272,7 @@ class TestDateTime(TestDate):
     @unittest.skip("ctime not implemented")
     def test_more_ctime(self):
         # Test fields that TestDate doesn't touch.
-        import time
+        import time as cpython_time
 
         t = self.theclass(2002, 3, 2, 18, 3, 5, 123)
         self.assertEqual(t.ctime(), "Sat Mar  2 18:03:05 2002")
@@ -280,7 +284,9 @@ class TestDateTime(TestDate):
 
         # So test a case where that difference doesn't matter.
         t = self.theclass(2002, 3, 22, 18, 3, 5, 123)
-        self.assertEqual(t.ctime(), time.ctime(time.mktime(t.timetuple())))
+        self.assertEqual(
+            t.ctime(), cpython_time.ctime(cpython_time.mktime(t.timetuple()))
+        )
 
     def test_tz_independent_comparing(self):
         dt1 = self.theclass(2002, 3, 1, 9, 0, 0)
@@ -537,7 +543,6 @@ class TestDateTime(TestDate):
         self.assertEqual(self.theclass.fromtimestamp(t.timestamp()), t)
 
         # Timestamp may raise an overflow error on some platforms
-        # XXX: Do we care to support the first and last year?
         for t in [self.theclass(2, 1, 1), self.theclass(9998, 12, 12)]:
             try:
                 s = t.timestamp()
