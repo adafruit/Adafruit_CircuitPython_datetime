@@ -9,7 +9,7 @@
 # SPDX-License-Identifier: Python-2.0
 # Implements a subset of https://github.com/python/cpython/blob/master/Lib/test/datetimetester.py
 # NOTE: This test is based off CPython and therefore linting is disabled within this file.
-# pylint:disable = invalid-name, no-member, cell-var-from-loop, unused-argument, no-self-use, too-few-public-methods, raise-missing-from, too-many-statements, too-many-lines, undefined-variable, eval-used, import-outside-toplevel, redefined-outer-name, too-many-locals
+# pylint:disable=invalid-name, no-member, cell-var-from-loop, unused-argument, no-self-use, too-few-public-methods, raise-missing-from, too-many-statements, too-many-lines, undefined-variable, eval-used, import-outside-toplevel, redefined-outer-name, too-many-locals, reimported, protected-access, wrong-import-position, consider-using-enumerate, wrong-import-order
 import sys
 
 # CircuitPython subset implementation
