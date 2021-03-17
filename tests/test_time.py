@@ -9,15 +9,15 @@
 # SPDX-License-Identifier: Python-2.0
 # Implements a subset of https://github.com/python/cpython/blob/master/Lib/test/datetimetester.py
 # NOTE: This test is based off CPython and therefore linting is disabled within this file.
-# pylint:disable = invalid-name, no-member, cell-var-from-loop, unused-argument, no-self-use, too-few-public-methods, 
+# pylint:disable = invalid-name, no-member, cell-var-from-loop, unused-argument, no-self-use, too-few-public-methods, consider-using-enumerate, undefined-variable
+# CircuitPython subset implementation
+import sys
+sys.path.append("..")
+from adafruit_datetime import time as cpy_time
 # CPython standard implementation
 from datetime import time as cpython_time
 import unittest
-# CircuitPython subset implementation
-import sys
 
-sys.path.append("..")
-from adafruit_datetime import time as cpy_time
 
 # An arbitrary collection of objects of non-datetime types, for testing
 # mixed-type comparisons.
