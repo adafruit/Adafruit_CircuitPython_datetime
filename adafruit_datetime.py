@@ -429,9 +429,15 @@ class timedelta:
     # Instance methods
     def total_seconds(self):
         """Return the total number of seconds contained in the duration."""
-        return (
-            (self._days * 86400 + self._seconds) * 10 ** 6 + self._microseconds
-        ) / 10 ** 6
+        # If the duration is less than a threshold duration, and microseconds
+        # is nonzero, then the result is a float.  Otherwise, the result is a
+        # (possibly long) integer.  This differs from standard Python where the
+        # result is always a float, because the precision of CircuitPython
+        # floats is considerably smaller than on standard Python.
+        seconds = self._days * 86400 + self._seconds
+        if self._microseconds != 0 and abs(seconds) < (1 << 21):
+            seconds += self._microseconds / 10 ** 6
+        return seconds
 
     def __repr__(self):
         args = []
