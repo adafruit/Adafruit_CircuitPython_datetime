@@ -33,7 +33,7 @@ import re as _re
 from micropython import const
 
 try:
-    from typing import Type, Any, Union, Optional, Tuple
+    from typing import Type, Any, Union, Optional, Tuple, Sequence, List
     NotImplementedType = Type[NotImplemented]
 except ImportError:
     pass
@@ -890,7 +890,7 @@ class time:
     """
 
     # pylint: disable=redefined-outer-name
-    def __new__(cls, hour=0, minute=0, second=0, microsecond=0, tzinfo=None, *, fold=0):
+    def __new__(cls, hour: int = 0, minute: int = 0, second: int = 0, microsecond: int = 0, tzinfo: Optional[tzinfo] = None, *, fold: int = 0) -> "time":
         _check_time_fields(hour, minute, second, microsecond, fold)
         _check_tzinfo_arg(tzinfo)
         self = object.__new__(cls)
@@ -905,39 +905,39 @@ class time:
 
     # Instance attributes (read-only)
     @property
-    def hour(self):
+    def hour(self) -> int:
         """In range(24)."""
         return self._hour
 
     @property
-    def minute(self):
+    def minute(self) -> int:
         """In range(60)."""
         return self._minute
 
     @property
-    def second(self):
+    def second(self) -> int:
         """In range(60)."""
         return self._second
 
     @property
-    def microsecond(self):
+    def microsecond(self) -> int:
         """In range(1000000)."""
         return self._microsecond
 
     @property
-    def fold(self):
+    def fold(self) -> int:
         """Fold."""
         return self._fold
 
     @property
-    def tzinfo(self):
+    def tzinfo(self) -> Optional[tzinfo]:
         """The object passed as the tzinfo argument to
         the time constructor, or None if none was passed.
         """
         return self._tzinfo
 
     @staticmethod
-    def _parse_iso_string(string_to_parse, segments):
+    def _parse_iso_string(string_to_parse: str, segments: Sequence[str]) -> List[int]:
         results = []
 
         remaining_string = string_to_parse
@@ -955,7 +955,7 @@ class time:
 
     # pylint: disable=too-many-locals
     @classmethod
-    def fromisoformat(cls, time_string):
+    def fromisoformat(cls, time_string: str) -> "time":
         """Return a time object constructed from an ISO date format.
         Valid format is ``HH[:MM[:SS[.fff[fff]]]][+HH:MM[:SS[.ffffff]]]``
 
@@ -1027,7 +1027,7 @@ class time:
     # pylint: enable=too-many-locals
 
     # Instance methods
-    def isoformat(self, timespec="auto"):
+    def isoformat(self, timespec: str = "auto") -> str:
         """Return a string representing the time in ISO 8601 format, one of:
         HH:MM:SS.ffffff, if microsecond is not 0
 
@@ -1049,7 +1049,7 @@ class time:
     # For a time t, str(t) is equivalent to t.isoformat()
     __str__ = isoformat
 
-    def utcoffset(self):
+    def utcoffset(self) -> timedelta:
         """Return the timezone offset in minutes east of UTC (negative west of
         UTC)."""
         if self._tzinfo is None:
@@ -1058,7 +1058,7 @@ class time:
         _check_utc_offset("utcoffset", offset)
         return offset
 
-    def tzname(self):
+    def tzname(self) -> str:
         """Return the timezone name.
 
         Note that the name is 100% informational -- there's no requirement that
@@ -1072,32 +1072,32 @@ class time:
         return name
 
     # Standard conversions and comparisons
-    def __eq__(self, other):
+    def __eq__(self, other: "time") -> bool:
         if not isinstance(other, time):
             return NotImplemented
         return self._cmp(other, allow_mixed=True) == 0
 
-    def __le__(self, other):
+    def __le__(self, other: "time") -> bool:
         if not isinstance(other, time):
             return NotImplemented
         return self._cmp(other) <= 0
 
-    def __lt__(self, other):
+    def __lt__(self, other: "time") -> bool:
         if not isinstance(other, time):
             return NotImplemented
         return self._cmp(other) < 0
 
-    def __ge__(self, other):
+    def __ge__(self, other: "time") -> bool:
         if not isinstance(other, time):
             return NotImplemented
         return self._cmp(other) >= 0
 
-    def __gt__(self, other):
+    def __gt__(self, other: "time") -> bool:
         if not isinstance(other, time):
             return NotImplemented
         return self._cmp(other) > 0
 
-    def _cmp(self, other, allow_mixed=False):
+    def _cmp(self, other: "time", allow_mixed: bool = False) -> int:
         assert isinstance(other, time)
         mytz = self._tzinfo
         ottz = other.tzinfo
@@ -1126,7 +1126,7 @@ class time:
             (othhmm, other.second, other.microsecond),
         )
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         """Hash."""
         if self._hashcode == -1:
             t = self
@@ -1146,7 +1146,7 @@ class time:
                     self._hashcode = hash((h, m, self.second, self.microsecond))
         return self._hashcode
 
-    def _tzstr(self, sep=":"):
+    def _tzstr(self, sep: str = ":") -> Optional[str]:
         """Return formatted timezone offset (+xx:xx) or None."""
         off = self.utcoffset()
         if off is not None:
@@ -1162,12 +1162,12 @@ class time:
             off = "%s%02d%s%02d" % (sign, hh, sep, mm)
         return off
 
-    def __format__(self, fmt):
+    def __format__(self, fmt: str) -> str:
         if not isinstance(fmt, str):
             raise TypeError("must be str, not %s" % type(fmt).__name__)
         return str(self)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Convert to formal string, for repr()."""
         if self._microsecond != 0:
             s = ", %d, %d" % (self._second, self._microsecond)
@@ -1187,7 +1187,7 @@ class time:
         return s
 
     # Pickle support
-    def _getstate(self, protocol=3):
+    def _getstate(self, protocol: int = 3) -> Tuple[bytes]:
         us2, us3 = divmod(self._microsecond, 256)
         us1, us2 = divmod(us2, 256)
         h = self._hour
