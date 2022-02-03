@@ -587,20 +587,20 @@ class tzinfo:
 
     """
 
-    def utcoffset(self, dt):
+    def utcoffset(self, dt: "datetime") -> timedelta:
         """Return offset of local time from UTC, as a timedelta
         object that is positive east of UTC.
 
         """
         raise NotImplementedError("tzinfo subclass must override utcoffset()")
 
-    def tzname(self, dt):
+    def tzname(self, dt: "datetime") -> str:
         """Return the time zone name corresponding to the datetime object dt, as a string."""
         raise NotImplementedError("tzinfo subclass must override tzname()")
 
     # tzinfo is an abstract base class, disabling for self._offset
     # pylint: disable=no-member
-    def fromutc(self, dt):
+    def fromutc(self, dt: "datetime") -> "datetime":
         "datetime in UTC -> datetime in local time."
 
         if not isinstance(dt, datetime):
