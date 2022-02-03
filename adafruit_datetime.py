@@ -537,7 +537,7 @@ class timedelta:
     __rmul__ = __mul__
 
     # Supported comparisons
-    def __eq__(self, other: "timedelta") -> bool:
+    def __eq__(self, other: Any) -> bool:
         if not isinstance(other, timedelta):
             return False
         return self._cmp(other) == 0
@@ -799,7 +799,7 @@ class timezone(tzinfo):
     # Sentinel value to disallow None
     _Omitted = object()
 
-    def __new__(cls, offset, name=_Omitted):
+    def __new__(cls, offset: timedelta, name: Union[str, object] = _Omitted) -> "timezone":
         if not isinstance(offset, timedelta):
             raise TypeError("offset must be a timedelta")
         if name is cls._Omitted:
@@ -824,7 +824,7 @@ class timezone(tzinfo):
 
     # pylint: disable=protected-access, bad-super-call
     @classmethod
-    def _create(cls, offset, name=None):
+    def _create(cls, offset: timedelta, name: Optional[str] = None) -> "timezone":
         """High-level creation for a timezone object."""
         self = super(tzinfo, cls).__new__(cls)
         self._offset = offset
@@ -832,12 +832,12 @@ class timezone(tzinfo):
         return self
 
     # Instance methods
-    def utcoffset(self, dt):
+    def utcoffset(self, dt: Optional["datetime"]) -> timedelta:
         if isinstance(dt, datetime) or dt is None:
             return self._offset
         raise TypeError("utcoffset() argument must be a datetime instance" " or None")
 
-    def tzname(self, dt):
+    def tzname(self, dt: Optional["datetime"]) -> str:
         if isinstance(dt, datetime) or dt is None:
             if self._name is None:
                 return self._name_from_offset(self._offset)
@@ -845,15 +845,15 @@ class timezone(tzinfo):
         raise TypeError("tzname() argument must be a datetime instance" " or None")
 
     # Comparison to other timezone objects
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         if not isinstance(other, timezone):
             return False
         return self._offset == other._offset
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self._offset)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Convert to formal string, for repr()."""
         if self is self.utc:
             return "datetime.timezone.utc"
@@ -865,11 +865,11 @@ class timezone(tzinfo):
             self._name,
         )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.tzname(None)
 
     @staticmethod
-    def _name_from_offset(delta):
+    def _name_from_offset(delta: timedelta) -> str:
         if delta < timedelta(0):
             sign = "-"
             delta = -delta
