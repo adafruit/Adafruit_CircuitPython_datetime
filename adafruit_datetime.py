@@ -33,9 +33,7 @@ import re as _re
 from micropython import const
 
 try:
-    from typing import Type, Any, Union, Optional, Tuple, Sequence, List
-
-    NotImplementedType = Type[NotImplemented]
+    from typing import Any, Union, Optional, Tuple, Sequence, List
 except ImportError:
     pass
 
