@@ -32,6 +32,11 @@ import math as _math
 import re as _re
 from micropython import const
 
+try:
+    from typing import Any, Union, Optional, Tuple
+except ImportError:
+    pass
+
 __version__ = "0.0.0-auto.0"
 __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_DateTime.git"
 
@@ -66,18 +71,18 @@ _DAYNAMES = (None, "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
 _INVALID_ISO_ERROR = "Invalid isoformat string: '{}'"
 
 # Utility functions - universal
-def _cmp(obj_x, obj_y):
+def _cmp(obj_x: Any, obj_y: Any) -> int:
     return 0 if obj_x == obj_y else 1 if obj_x > obj_y else -1
 
 
-def _cmperror(obj_x, obj_y):
+def _cmperror(obj_x: Union["datetime", "timedelta"], obj_y: Union["datetime", "timedelta"]) -> None:
     raise TypeError(
         "can't compare '%s' to '%s'" % (type(obj_x).__name__, type(obj_y).__name__)
     )
 
 
 # Utility functions - time
-def _check_time_fields(hour, minute, second, microsecond, fold):
+def _check_time_fields(hour: int, minute: int, second: int, microsecond: int, fold: int) -> None:
     if not isinstance(hour, int):
         raise TypeError("Hour expected as int")
     if not 0 <= hour <= 23:
@@ -92,7 +97,7 @@ def _check_time_fields(hour, minute, second, microsecond, fold):
         raise ValueError("fold must be either 0 or 1", fold)
 
 
-def _check_utc_offset(name, offset):
+def _check_utc_offset(name: str, offset: "timedelta") -> None:
     assert name in ("utcoffset", "dst")
     if offset is None:
         return
@@ -114,7 +119,7 @@ def _check_utc_offset(name, offset):
 
 
 # pylint: disable=invalid-name
-def _format_offset(off):
+def _format_offset(off: "timedelta") -> str:
     s = ""
     if off is not None:
         if off.days < 0:
@@ -134,7 +139,7 @@ def _format_offset(off):
 
 
 # Utility functions - timezone
-def _check_tzname(name):
+def _check_tzname(name: Optional[str]) -> None:
     """"Just raise TypeError if the arg isn't None or a string."""
     if name is not None and not isinstance(name, str):
         raise TypeError(
@@ -142,18 +147,18 @@ def _check_tzname(name):
         )
 
 
-def _check_tzinfo_arg(time_zone):
+def _check_tzinfo_arg(time_zone: Optional["tzinfo"]):
     if time_zone is not None and not isinstance(time_zone, tzinfo):
         raise TypeError("tzinfo argument must be None or of a tzinfo subclass")
 
 
 # Utility functions - date
-def _is_leap(year):
     "year -> 1 if leap year, else 0."
+def _is_leap(year: int) -> bool:
     return year % 4 == 0 and (year % 100 != 0 or year % 400 == 0)
 
 
-def _days_in_month(year, month):
+def _days_in_month(year: int, month: int) -> int:
     "year, month -> number of days in that month in that year."
     assert 1 <= month <= 12, month
     if month == 2 and _is_leap(year):
@@ -161,7 +166,7 @@ def _days_in_month(year, month):
     return _DAYS_IN_MONTH[month]
 
 
-def _check_date_fields(year, month, day):
+def _check_date_fields(year: int, month: int, day: int) -> None:
     if not isinstance(year, int):
         raise TypeError("int expected")
     if not MINYEAR <= year <= MAXYEAR:
@@ -173,19 +178,19 @@ def _check_date_fields(year, month, day):
         raise ValueError("day must be in 1..%d" % dim, day)
 
 
-def _days_before_month(year, month):
+def _days_before_month(year: int, month: int) -> int:
     "year, month -> number of days in year preceding first day of month."
     assert 1 <= month <= 12, "month must be in 1..12"
     return _DAYS_BEFORE_MONTH[month] + (month > 2 and _is_leap(year))
 
 
-def _days_before_year(year):
+def _days_before_year(year: int) -> int:
     "year -> number of days before January 1st of year."
     year = year - 1
     return year * 365 + year // 4 - year // 100 + year // 400
 
 
-def _ymd2ord(year, month, day):
+def _ymd2ord(year: int, month: int, day: int) -> int:
     "year, month, day -> ordinal, considering 01-Jan-0001 as day 1."
     assert 1 <= month <= 12, "month must be in 1..12"
     dim = _days_in_month(year, month)
@@ -194,7 +199,7 @@ def _ymd2ord(year, month, day):
 
 
 # pylint: disable=too-many-arguments
-def _build_struct_time(tm_year, tm_month, tm_mday, tm_hour, tm_min, tm_sec, tm_isdst):
+def _build_struct_time(tm_year: int, tm_month: int, tm_mday: int, tm_hour: int, tm_min: int, tm_sec: int, tm_isdst: int) -> _time.struct_time:
     tm_wday = (_ymd2ord(tm_year, tm_month, tm_mday) + 6) % 7
     tm_yday = _days_before_month(tm_year, tm_month) + tm_mday
     return _time.struct_time(
@@ -213,7 +218,7 @@ def _build_struct_time(tm_year, tm_month, tm_mday, tm_hour, tm_min, tm_sec, tm_i
 
 
 # pylint: disable=invalid-name
-def _format_time(hh, mm, ss, us, timespec="auto"):
+def _format_time(hh: int, mm: int, ss: int, us: int, timespec: str = "auto") -> str:
     if timespec != "auto":
         raise NotImplementedError("Only default timespec supported")
     if us:
@@ -237,7 +242,7 @@ assert _DI400Y == 4 * _DI100Y + 1
 assert _DI100Y == 25 * _DI4Y - 1
 
 
-def _ord2ymd(n):
+def _ord2ymd(n: int) -> Tuple[int, int, int]:
     "ordinal -> (year, month, day), considering 01-Jan-0001 as day 1."
 
     # n is a 1-based index, starting at 1-Jan-1.  The pattern of leap years
