@@ -33,7 +33,8 @@ import re as _re
 from micropython import const
 
 try:
-    from typing import Any, Union, Optional, Tuple
+    from typing import Type, Any, Union, Optional, Tuple
+    NotImplementedType = Type[NotImplemented]
 except ImportError:
     pass
 
@@ -311,14 +312,14 @@ class timedelta:
     # pylint: disable=too-many-arguments, too-many-locals, too-many-statements
     def __new__(
         cls,
-        days=0,
-        seconds=0,
-        microseconds=0,
-        milliseconds=0,
-        minutes=0,
-        hours=0,
-        weeks=0,
-    ):
+        days: int = 0,
+        seconds:int = 0,
+        microseconds: int = 0,
+        milliseconds: int = 0,
+        minutes: int = 0,
+        hours: int = 0,
+        weeks: int = 0,
+    ) -> "timedelta":
 
         # Check that all inputs are ints or floats.
         if not all(
@@ -417,22 +418,22 @@ class timedelta:
 
     # Instance attributes (read-only)
     @property
-    def days(self):
+    def days(self) -> int:
         """Days, Between -999999999 and 999999999 inclusive"""
         return self._days
 
     @property
-    def seconds(self):
+    def seconds(self) -> int:
         """Seconds, Between 0 and 86399 inclusive"""
         return self._seconds
 
     @property
-    def microseconds(self):
+    def microseconds(self) -> int:
         """Microseconds, Between 0 and 999999 inclusive"""
         return self._microseconds
 
     # Instance methods
-    def total_seconds(self):
+    def total_seconds(self) -> float:
         """Return the total number of seconds contained in the duration."""
         # If the duration is less than a threshold duration, and microseconds
         # is nonzero, then the result is a float.  Otherwise, the result is a
@@ -444,7 +445,7 @@ class timedelta:
             seconds += self._microseconds / 10 ** 6
         return seconds
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         args = []
         if self._days:
             args.append("days=%d" % self._days)
@@ -460,7 +461,7 @@ class timedelta:
             ", ".join(args),
         )
 
-    def __str__(self):
+    def __str__(self) -> str:
         mm, ss = divmod(self._seconds, 60)
         hh, mm = divmod(mm, 60)
         s = "%d:%02d:%02d" % (hh, mm, ss)
@@ -475,10 +476,10 @@ class timedelta:
         return s
 
     # Supported operations
-    def __neg__(self):
+    def __neg__(self) -> "timedelta":
         return timedelta(-self._days, -self._seconds, -self._microseconds)
 
-    def __add__(self, other):
+    def __add__(self, other: "timedelta") -> "timedelta":
         if isinstance(other, timedelta):
             return timedelta(
                 self._days + other._days,
@@ -487,7 +488,7 @@ class timedelta:
             )
         return NotImplemented
 
-    def __sub__(self, other):
+    def __sub__(self, other: "timedelta") -> "timedelta":
         if isinstance(other, timedelta):
             return timedelta(
                 self._days - other._days,
@@ -496,10 +497,10 @@ class timedelta:
             )
         return NotImplemented
 
-    def _to_microseconds(self):
+    def _to_microseconds(self) -> int:
         return (self._days * (24 * 3600) + self._seconds) * 1000000 + self._microseconds
 
-    def __floordiv__(self, other):
+    def __floordiv__(self, other: Union[int, "timedelta"]) -> Union[int, "timedelta"]:
         if not isinstance(other, (int, timedelta)):
             return NotImplemented
         usec = self._to_microseconds()
@@ -507,19 +508,19 @@ class timedelta:
             return usec // other._to_microseconds()
         return timedelta(0, 0, usec // other)
 
-    def __mod__(self, other):
+    def __mod__(self, other: "timedelta") -> "timedelta":
         if isinstance(other, timedelta):
             r = self._to_microseconds() % other._to_microseconds()
             return timedelta(0, 0, r)
         return NotImplemented
 
-    def __divmod__(self, other):
+    def __divmod__(self, other: "timedelta") -> "timedelta":
         if isinstance(other, timedelta):
             q, r = divmod(self._to_microseconds(), other._to_microseconds())
             return q, timedelta(0, 0, r)
         return NotImplemented
 
-    def __mul__(self, other):
+    def __mul__(self, other: float) -> "timedelta":
         if isinstance(other, int):
             # for CPython compatibility, we cannot use
             # our __class__ here, but need a real timedelta
@@ -536,45 +537,45 @@ class timedelta:
     __rmul__ = __mul__
 
     # Supported comparisons
-    def __eq__(self, other):
+    def __eq__(self, other: "timedelta") -> bool:
         if not isinstance(other, timedelta):
             return False
         return self._cmp(other) == 0
 
-    def __ne__(self, other):
+    def __ne__(self, other: "timedelta") -> bool:
         if not isinstance(other, timedelta):
             return True
         return self._cmp(other) != 0
 
-    def __le__(self, other):
+    def __le__(self, other: "timedelta") -> bool:
         if not isinstance(other, timedelta):
             _cmperror(self, other)
         return self._cmp(other) <= 0
 
-    def __lt__(self, other):
+    def __lt__(self, other: "timedelta") -> bool:
         if not isinstance(other, timedelta):
             _cmperror(self, other)
         return self._cmp(other) < 0
 
-    def __ge__(self, other):
+    def __ge__(self, other: "timedelta") -> bool:
         if not isinstance(other, timedelta):
             _cmperror(self, other)
         return self._cmp(other) >= 0
 
-    def __gt__(self, other):
+    def __gt__(self, other: "timedelta") -> bool:
         if not isinstance(other, timedelta):
             _cmperror(self, other)
         return self._cmp(other) > 0
 
     # pylint: disable=no-self-use, protected-access
-    def _cmp(self, other):
+    def _cmp(self, other: "timedelta") -> int:
         assert isinstance(other, timedelta)
         return _cmp(self._getstate(), other._getstate())
 
-    def __bool__(self):
+    def __bool__(self) -> bool:
         return self._days != 0 or self._seconds != 0 or self._microseconds != 0
 
-    def _getstate(self):
+    def _getstate(self) -> Tuple[int, int, int]:
         return (self._days, self._seconds, self._microseconds)
 
 
