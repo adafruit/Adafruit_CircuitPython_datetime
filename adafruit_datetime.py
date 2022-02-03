@@ -34,6 +34,7 @@ from micropython import const
 
 try:
     from typing import Type, Any, Union, Optional, Tuple, Sequence, List
+
     NotImplementedType = Type[NotImplemented]
 except ImportError:
     pass
@@ -76,14 +77,18 @@ def _cmp(obj_x: Any, obj_y: Any) -> int:
     return 0 if obj_x == obj_y else 1 if obj_x > obj_y else -1
 
 
-def _cmperror(obj_x: Union["datetime", "timedelta"], obj_y: Union["datetime", "timedelta"]) -> None:
+def _cmperror(
+    obj_x: Union["datetime", "timedelta"], obj_y: Union["datetime", "timedelta"]
+) -> None:
     raise TypeError(
         "can't compare '%s' to '%s'" % (type(obj_x).__name__, type(obj_y).__name__)
     )
 
 
 # Utility functions - time
-def _check_time_fields(hour: int, minute: int, second: int, microsecond: int, fold: int) -> None:
+def _check_time_fields(
+    hour: int, minute: int, second: int, microsecond: int, fold: int
+) -> None:
     if not isinstance(hour, int):
         raise TypeError("Hour expected as int")
     if not 0 <= hour <= 23:
@@ -200,7 +205,15 @@ def _ymd2ord(year: int, month: int, day: int) -> int:
 
 
 # pylint: disable=too-many-arguments
-def _build_struct_time(tm_year: int, tm_month: int, tm_mday: int, tm_hour: int, tm_min: int, tm_sec: int, tm_isdst: int) -> _time.struct_time:
+def _build_struct_time(
+    tm_year: int,
+    tm_month: int,
+    tm_mday: int,
+    tm_hour: int,
+    tm_min: int,
+    tm_sec: int,
+    tm_isdst: int,
+) -> _time.struct_time:
     tm_wday = (_ymd2ord(tm_year, tm_month, tm_mday) + 6) % 7
     tm_yday = _days_before_month(tm_year, tm_month) + tm_mday
     return _time.struct_time(
@@ -313,7 +326,7 @@ class timedelta:
     def __new__(
         cls,
         days: int = 0,
-        seconds:int = 0,
+        seconds: int = 0,
         microseconds: int = 0,
         milliseconds: int = 0,
         minutes: int = 0,
@@ -692,7 +705,12 @@ class date:
         return cls.fromtimestamp(_time.time())
 
     # Instance Methods
-    def replace(self, year: Optional[int] = None, month: Optional[int] = None, day: Optional[int] = None):
+    def replace(
+        self,
+        year: Optional[int] = None,
+        month: Optional[int] = None,
+        day: Optional[int] = None,
+    ):
         """Return a date with the same value, except for those parameters
         given new values by whichever keyword arguments are specified.
         If no keyword arguments are specified - values are obtained from
@@ -799,7 +817,9 @@ class timezone(tzinfo):
     # Sentinel value to disallow None
     _Omitted = object()
 
-    def __new__(cls, offset: timedelta, name: Union[str, object] = _Omitted) -> "timezone":
+    def __new__(
+        cls, offset: timedelta, name: Union[str, object] = _Omitted
+    ) -> "timezone":
         if not isinstance(offset, timedelta):
             raise TypeError("offset must be a timedelta")
         if name is cls._Omitted:
@@ -890,7 +910,16 @@ class time:
     """
 
     # pylint: disable=redefined-outer-name
-    def __new__(cls, hour: int = 0, minute: int = 0, second: int = 0, microsecond: int = 0, tzinfo: Optional[tzinfo] = None, *, fold: int = 0) -> "time":
+    def __new__(
+        cls,
+        hour: int = 0,
+        minute: int = 0,
+        second: int = 0,
+        microsecond: int = 0,
+        tzinfo: Optional[tzinfo] = None,
+        *,
+        fold: int = 0
+    ) -> "time":
         _check_time_fields(hour, minute, second, microsecond, fold)
         _check_tzinfo_arg(tzinfo)
         self = object.__new__(cls)
@@ -1330,7 +1359,9 @@ class datetime(date):
 
     ## pylint: disable=arguments-differ
     @classmethod
-    def fromtimestamp(cls, timestamp: float, tz: Optional["tzinfo"] = None) -> "datetime":
+    def fromtimestamp(
+        cls, timestamp: float, tz: Optional["tzinfo"] = None
+    ) -> "datetime":
         return cls._fromtimestamp(timestamp, tz is not None, tz)
 
     @classmethod
@@ -1357,7 +1388,7 @@ class datetime(date):
         return cls.combine(dateval, timeval)
 
     @classmethod
-    def now(cls, timezone: Optional["tzinfo"]=None) -> "datetime":
+    def now(cls, timezone: Optional["tzinfo"] = None) -> "datetime":
         """Return the current local date and time."""
         return cls.fromtimestamp(_time.time(), tz=timezone)
 
