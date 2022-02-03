@@ -153,8 +153,8 @@ def _check_tzinfo_arg(time_zone: Optional["tzinfo"]):
 
 
 # Utility functions - date
-    "year -> 1 if leap year, else 0."
 def _is_leap(year: int) -> bool:
+    "year -> True if leap year, else False."
     return year % 4 == 0 and (year % 100 != 0 or year % 400 == 0)
 
 
