@@ -621,7 +621,7 @@ class date:
 
     """
 
-    def __new__(cls, year, month, day):
+    def __new__(cls, year: int, month: int, day: int) -> "date":
         """Creates a new date object.
 
         :param int year: Year within range, MINYEAR <= year <= MAXYEAR
@@ -638,23 +638,23 @@ class date:
 
     # Instance attributes (read-only)
     @property
-    def year(self):
+    def year(self) -> int:
         """Between MINYEAR and MAXYEAR inclusive."""
         return self._year
 
     @property
-    def month(self):
+    def month(self) -> int:
         """Between 1 and 12 inclusive."""
         return self._month
 
     @property
-    def day(self):
+    def day(self) -> int:
         """Between 1 and the number of days in the given month of the given year."""
         return self._day
 
     # Class Methods
     @classmethod
-    def fromtimestamp(cls, t):
+    def fromtimestamp(cls, t: float) -> "date":
         """Return the local date corresponding to the POSIX timestamp,
         such as is returned by time.time().
         """
@@ -662,7 +662,7 @@ class date:
         return cls(tm_struct[0], tm_struct[1], tm_struct[2])
 
     @classmethod
-    def fromordinal(cls, ordinal):
+    def fromordinal(cls, ordinal: int) -> "date":
         """Return the date corresponding to the proleptic Gregorian ordinal,
         where January 1 of year 1 has ordinal 1.
 
@@ -673,7 +673,7 @@ class date:
         return cls(y, m, d)
 
     @classmethod
-    def fromisoformat(cls, date_string):
+    def fromisoformat(cls, date_string: str) -> "date":
         """Return a date object constructed from an ISO date format.
         Valid format is ``YYYY-MM-DD``
 
@@ -687,12 +687,12 @@ class date:
         raise ValueError(_INVALID_ISO_ERROR.format(date_string))
 
     @classmethod
-    def today(cls):
+    def today(cls) -> "date":
         """Return the current local date."""
         return cls.fromtimestamp(_time.time())
 
     # Instance Methods
-    def replace(self, year=None, month=None, day=None):
+    def replace(self, year: Optional[int] = None, month: Optional[int] = None, day: Optional[int] = None):
         """Return a date with the same value, except for those parameters
         given new values by whichever keyword arguments are specified.
         If no keyword arguments are specified - values are obtained from
@@ -701,36 +701,36 @@ class date:
         """
         raise NotImplementedError()
 
-    def timetuple(self):
+    def timetuple(self) -> _time.struct_time:
         """Return a time.struct_time such as returned by time.localtime().
         The hours, minutes and seconds are 0, and the DST flag is -1.
 
         """
         return _build_struct_time(self._year, self._month, self._day, 0, 0, 0, -1)
 
-    def toordinal(self):
+    def toordinal(self) -> int:
         """Return the proleptic Gregorian ordinal of the date, where January 1 of
         year 1 has ordinal 1.
         """
         return _ymd2ord(self._year, self._month, self._day)
 
-    def weekday(self):
+    def weekday(self) -> int:
         """Return the day of the week as an integer, where Monday is 0 and Sunday is 6."""
         return (self.toordinal() + 6) % 7
 
     # ISO date
-    def isoweekday(self):
+    def isoweekday(self) -> int:
         """Return the day of the week as an integer, where Monday is 1 and Sunday is 7."""
         return self.toordinal() % 7 or 7
 
-    def isoformat(self):
+    def isoformat(self) -> str:
         """Return a string representing the date in ISO 8601 format, YYYY-MM-DD:"""
         return "%04d-%02d-%02d" % (self._year, self._month, self._day)
 
     # For a date d, str(d) is equivalent to d.isoformat()
     __str__ = isoformat
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Convert to formal string, for repr()."""
         return "%s(%d, %d, %d)" % (
             "datetime." + self.__class__.__name__,
@@ -740,48 +740,48 @@ class date:
         )
 
     # Supported comparisons
-    def __eq__(self, other):
+    def __eq__(self, other: "date") -> bool:
         if isinstance(other, date):
             return self._cmp(other) == 0
         return NotImplemented
 
-    def __le__(self, other):
+    def __le__(self, other: "date") -> bool:
         if isinstance(other, date):
             return self._cmp(other) <= 0
         return NotImplemented
 
-    def __lt__(self, other):
+    def __lt__(self, other: "date") -> bool:
         if isinstance(other, date):
             return self._cmp(other) < 0
         return NotImplemented
 
-    def __ge__(self, other):
+    def __ge__(self, other: "date") -> bool:
         if isinstance(other, date):
             return self._cmp(other) >= 0
         return NotImplemented
 
-    def __gt__(self, other):
+    def __gt__(self, other: "date") -> bool:
         if isinstance(other, date):
             return self._cmp(other) > 0
         return NotImplemented
 
-    def _cmp(self, other):
+    def _cmp(self, other: "date") -> int:
         assert isinstance(other, date)
         y, m, d = self._year, self._month, self._day
         y2, m2, d2 = other.year, other.month, other.day
         return _cmp((y, m, d), (y2, m2, d2))
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         if self._hashcode == -1:
             self._hashcode = hash(self._getstate())
         return self._hashcode
 
     # Pickle support
-    def _getstate(self):
+    def _getstate(self) -> Tuple[bytes]:
         yhi, ylo = divmod(self._year, 256)
         return (bytes([yhi, ylo, self._month, self._day]),)
 
-    def _setstate(self, string):
+    def _setstate(self, string: bytes) -> None:
         yhi, ylo, self._month, self._day = string
         self._year = yhi * 256 + ylo
 
