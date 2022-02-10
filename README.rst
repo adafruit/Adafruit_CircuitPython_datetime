@@ -92,10 +92,24 @@ Documentation
 
 API documentation for this library can be found on `Read the Docs <https://docs.circuitpython.org/projects/datetime/en/latest/>`_.
 
-
-
 For information on building library documentation, please check out `this guide <https://learn.adafruit.com/creating-and-sharing-a-circuitpython-library/sharing-our-docs-on-readthedocs#sphinx-5-1>`_.
 
 Contributing
 ============
+
+Contributions are welcome! Please read our `Code of Conduct
+<https://github.com/adafruit/Adafruit_CircuitPython_datetime/blob/main/CODE_OF_CONDUCT.md>`_
+before contributing to help this project stay welcoming.
+
+License
+=======
+See LICENSE/ for details.
+
+Copyright (c) 2001-2021 Python Software Foundation. All rights reserved.
+
+Copyright (c) 2000 BeOpen.com. All rights reserved.
+
+Copyright (c) 1995-2001 Corporation for National Research Initiatives. All rights reserved.
+
+Copyright (c) 1991-1995 Stichting Mathematisch Centrum. All rights reserved.
 
