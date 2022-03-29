@@ -584,7 +584,7 @@ class TestDateTime(TestDate):
                 self.assertEqual(t, minus_one)
                 t = fts(-1e-7)
                 self.assertEqual(t, zero)
-                t = fts(-1 / 2 ** 7)
+                t = fts(-1 / 2**7)
                 self.assertEqual(t.second, 59)
                 self.assertEqual(t.microsecond, 992188)
 
@@ -598,7 +598,7 @@ class TestDateTime(TestDate):
             t = fts(0.9999999)
             self.assertEqual(t.second, 1)
             self.assertEqual(t.microsecond, 0)
-            t = fts(1 / 2 ** 7)
+            t = fts(1 / 2**7)
             self.assertEqual(t.second, 0)
             self.assertEqual(t.microsecond, 7812)
 

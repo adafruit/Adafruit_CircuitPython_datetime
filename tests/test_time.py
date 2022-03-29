@@ -293,7 +293,7 @@ class TestTime(HarmlessMixedComparison, unittest.TestCase):
 
     @unittest.skip("Skip for CircuitPython  - not implemented")
     def test_pickling(self):
-        args = 20, 59, 16, 64 ** 2
+        args = 20, 59, 16, 64**2
         orig = self.theclass(*args)
         for pickler, unpickler, proto in pickle_choices:
             green = pickler.dumps(orig, proto)
@@ -302,7 +302,7 @@ class TestTime(HarmlessMixedComparison, unittest.TestCase):
 
     @unittest.skip("Skip for CircuitPython  - not implemented")
     def test_pickling_subclass_time(self):
-        args = 20, 59, 16, 64 ** 2
+        args = 20, 59, 16, 64**2
         orig = SubclassTime(*args)
         for pickler, unpickler, proto in pickle_choices:
             green = pickler.dumps(orig, proto)

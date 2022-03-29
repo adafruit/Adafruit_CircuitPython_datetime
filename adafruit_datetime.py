@@ -144,7 +144,7 @@ def _format_offset(off: "timedelta") -> str:
 
 # Utility functions - timezone
 def _check_tzname(name: Optional[str]) -> None:
-    """"Just raise TypeError if the arg isn't None or a string."""
+    """ "Just raise TypeError if the arg isn't None or a string."""
     if name is not None and not isinstance(name, str):
         raise TypeError(
             "tzinfo.tzname() must return None or string, " "not '%s'" % type(name)
@@ -453,7 +453,7 @@ class timedelta:
         # floats is considerably smaller than on standard Python.
         seconds = self._days * 86400 + self._seconds
         if self._microseconds != 0 and abs(seconds) < (1 << 21):
-            seconds += self._microseconds / 10 ** 6
+            seconds += self._microseconds / 10**6
         return seconds
 
     def __repr__(self) -> str:
