@@ -609,6 +609,13 @@ class tzinfo:
         """Return the time zone name corresponding to the datetime object dt, as a string."""
         raise NotImplementedError("tzinfo subclass must override tzname()")
 
+    def dst(self, dt: "datetime") -> None:  # pylint: disable=unused-argument
+        """Return the DST setting correspinding to the datetime object dt, as a number.
+
+        DST usage is currently not implemented for this library.
+        """
+        return None
+
     # tzinfo is an abstract base class, disabling for self._offset
     # pylint: disable=no-member
     def fromutc(self, dt: "datetime") -> "datetime":
