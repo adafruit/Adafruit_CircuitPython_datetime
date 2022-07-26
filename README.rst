@@ -1,7 +1,7 @@
 Introduction
 ============
 
-.. image:: https://readthedocs.org/projects/adafruit-circuitpython-datetime/badge/?version=latest
+.. image:: https://readthedocs.org/projects/datetime/badge/?version=latest
     :target: https://docs.circuitpython.org/projects/datetime/en/latest/
     :alt: Documentation Status
 
