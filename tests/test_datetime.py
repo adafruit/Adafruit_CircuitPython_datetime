@@ -239,10 +239,10 @@ class TestDateTime(TestDate):
     @unittest.skip("strftime not implemented in datetime")
     def test_format(self):
         dt = self.theclass(2007, 9, 10, 4, 5, 1, 123)
-        self.assertEqual(dt.__format__(""), str(dt))
+        self.assertEqual(format(dt, ""), str(dt))
 
         with self.assertRaisesRegex(TypeError, "must be str, not int"):
-            dt.__format__(123)
+            format(dt, 123)
 
         # check that a derived class's __str__() gets called
         class A(self.theclass):
@@ -250,7 +250,7 @@ class TestDateTime(TestDate):
                 return "A"
 
         a = A(2007, 9, 10, 4, 5, 1, 123)
-        self.assertEqual(a.__format__(""), "A")
+        self.assertEqual(format(a, ""), "A")
 
         # check that a derived class's strftime gets called
         class B(self.theclass):
@@ -258,16 +258,16 @@ class TestDateTime(TestDate):
                 return "B"
 
         b = B(2007, 9, 10, 4, 5, 1, 123)
-        self.assertEqual(b.__format__(""), str(dt))
+        self.assertEqual(format(b, ""), str(dt))
 
         for fmt in [
             "m:%m d:%d y:%y",
             "m:%m d:%d y:%y H:%H M:%M S:%S",
             "%z %Z",
         ]:
-            self.assertEqual(dt.__format__(fmt), dt.strftime(fmt))
-            self.assertEqual(a.__format__(fmt), dt.strftime(fmt))
-            self.assertEqual(b.__format__(fmt), "B")
+            self.assertEqual(format(dt, fmt), dt.strftime(fmt))
+            self.assertEqual(format(a, fmt), dt.strftime(fmt))
+            self.assertEqual(format(b, fmt), "B")
 
     @unittest.skip("ctime not implemented")
     def test_more_ctime(self):

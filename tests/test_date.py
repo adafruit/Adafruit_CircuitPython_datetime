@@ -9,7 +9,7 @@
 # SPDX-License-Identifier: Python-2.0
 # Implements a subset of https://github.com/python/cpython/blob/master/Lib/test/datetimetester.py
 # NOTE: This test is based off CPython and therefore linting is disabled within this file.
-# pylint:disable=invalid-name, no-member, wrong-import-position, undefined-variable, no-self-use, cell-var-from-loop, misplaced-comparison-constant, too-many-public-methods, fixme, import-outside-toplevel, unused-argument, too-few-public-methods
+# pylint:disable=invalid-name, no-member, wrong-import-position, undefined-variable, no-self-use, cell-var-from-loop, too-many-public-methods, fixme, import-outside-toplevel, unused-argument, too-few-public-methods
 import sys
 import unittest
 
@@ -225,7 +225,7 @@ class TestDate(unittest.TestCase):
 
     def test_format(self):
         dt = cpy_date(2007, 9, 10)
-        self.assertEqual(dt.__format__(""), str(dt))
+        self.assertEqual(format(dt, ""), str(dt))
 
         # check that a derived class's __str__() gets called
         class A(cpy_date):
@@ -233,7 +233,7 @@ class TestDate(unittest.TestCase):
                 return "A"
 
         a = A(2007, 9, 10)
-        self.assertEqual(a.__format__(""), "A")
+        self.assertEqual(format(a, ""), "A")
 
         # check that a derived class's strftime gets called
         class B(cpy_date):
@@ -241,7 +241,7 @@ class TestDate(unittest.TestCase):
                 return "B"
 
         b = B(2007, 9, 10)
-        self.assertEqual(b.__format__(""), str(dt))
+        self.assertEqual(format(b, ""), str(dt))
 
         # date strftime not implemented in CircuitPython, skip
         """for fmt in ["m:%m d:%d y:%y",
