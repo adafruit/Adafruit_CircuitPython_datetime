@@ -237,10 +237,10 @@ class TestTime(HarmlessMixedComparison, unittest.TestCase):
     @unittest.skip("strftime not implemented for CircuitPython time objects")
     def test_format(self):
         t = self.theclass(1, 2, 3, 4)
-        self.assertEqual(t.__format__(""), str(t))
+        self.assertEqual(format(t, ""), str(t))
 
         with self.assertRaisesRegex(TypeError, "must be str, not int"):
-            t.__format__(123)
+            format(t, 123)
 
         # check that a derived class's __str__() gets called
         class A(self.theclass):
@@ -248,7 +248,7 @@ class TestTime(HarmlessMixedComparison, unittest.TestCase):
                 return "A"
 
         a = A(1, 2, 3, 4)
-        self.assertEqual(a.__format__(""), "A")
+        self.assertEqual(format(a, ""), "A")
 
         # check that a derived class's strftime gets called
         class B(self.theclass):
@@ -256,14 +256,14 @@ class TestTime(HarmlessMixedComparison, unittest.TestCase):
                 return "B"
 
         b = B(1, 2, 3, 4)
-        self.assertEqual(b.__format__(""), str(t))
+        self.assertEqual(format(b, ""), str(t))
 
         for fmt in [
             "%H %M %S",
         ]:
-            self.assertEqual(t.__format__(fmt), t.strftime(fmt))
-            self.assertEqual(a.__format__(fmt), t.strftime(fmt))
-            self.assertEqual(b.__format__(fmt), "B")
+            self.assertEqual(format(t, fmt), t.strftime(fmt))
+            self.assertEqual(format(a, fmt), t.strftime(fmt))
+            self.assertEqual(format(b, fmt), "B")
 
     def test_str(self):
         self.assertEqual(str(self.theclass(1, 2, 3, 4)), "01:02:03.000004")

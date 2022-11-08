@@ -628,7 +628,7 @@ class tzinfo:
 
         dtoff = dt.utcoffset()
         if dtoff is None:
-            raise ValueError("fromutc() requires a non-None utcoffset() " "result")
+            raise ValueError("fromutc() requires a non-None utcoffset() result")
         return dt + self._offset
 
 
@@ -841,7 +841,7 @@ class timezone(tzinfo):
             )
         if offset.microseconds != 0 or offset.seconds % 60 != 0:
             raise ValueError(
-                "offset must be a timedelta" " representing a whole number of minutes"
+                "offset must be a timedelta representing a whole number of minutes"
             )
         cls._offset = offset
         cls._name = name
@@ -860,14 +860,14 @@ class timezone(tzinfo):
     def utcoffset(self, dt: Optional["datetime"]) -> timedelta:
         if isinstance(dt, datetime) or dt is None:
             return self._offset
-        raise TypeError("utcoffset() argument must be a datetime instance" " or None")
+        raise TypeError("utcoffset() argument must be a datetime instance or None")
 
     def tzname(self, dt: Optional["datetime"]) -> str:
         if isinstance(dt, datetime) or dt is None:
             if self._name is None:
                 return self._name_from_offset(self._offset)
             return self._name
-        raise TypeError("tzname() argument must be a datetime instance" " or None")
+        raise TypeError("tzname() argument must be a datetime instance or None")
 
     # Comparison to other timezone objects
     def __eq__(self, other: Any) -> bool:
@@ -1362,7 +1362,7 @@ class datetime(date):
             result = tz.fromutc(result)
         return result
 
-    ## pylint: disable=arguments-differ
+    ## pylint: disable=arguments-differ, arguments-renamed
     @classmethod
     def fromtimestamp(
         cls, timestamp: float, tz: Optional["tzinfo"] = None
