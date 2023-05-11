@@ -62,7 +62,6 @@ class HarmlessMixedComparison:
 
 
 class TestTime(HarmlessMixedComparison, unittest.TestCase):
-
     theclass = cpy_time
     theclass_cpython = cpython_time
 

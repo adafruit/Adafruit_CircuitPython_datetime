@@ -70,6 +70,7 @@ _DAYNAMES = (None, "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
 
 _INVALID_ISO_ERROR = "Invalid isoformat string: '{}'"
 
+
 # Utility functions - universal
 def _cmp(obj_x: Any, obj_y: Any) -> int:
     return 0 if obj_x == obj_y else 1 if obj_x > obj_y else -1
@@ -331,7 +332,6 @@ class timedelta:
         hours: int = 0,
         weeks: int = 0,
     ) -> "timedelta":
-
         # Check that all inputs are ints or floats.
         if not all(
             isinstance(i, (int, float))
