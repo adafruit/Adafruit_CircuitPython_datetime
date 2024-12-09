@@ -923,7 +923,7 @@ class time:
         microsecond: int = 0,
         tzinfo: Optional[tzinfo] = None,
         *,
-        fold: int = 0
+        fold: int = 0,
     ) -> "time":
         _check_time_fields(hour, minute, second, microsecond, fold)
         _check_tzinfo_arg(tzinfo)
@@ -994,6 +994,8 @@ class time:
         Valid format is ``HH[:MM[:SS[.fff[fff]]]][+HH:MM[:SS[.ffffff]]]``
 
         """
+        if time_string[-1] == "Z":
+            time_string = f"{time_string[:-1]}+00:00"
         # Store the original string in an error message
         original_string = time_string
         match = _re.match(r"(.*)[\-\+]", time_string)
@@ -1254,7 +1256,7 @@ class datetime(date):
         microsecond: int = 0,
         tzinfo: Optional[tzinfo] = None,
         *,
-        fold: int = 0
+        fold: int = 0,
     ) -> "datetime":
         _check_date_fields(year, month, day)
         _check_time_fields(hour, minute, second, microsecond, fold)
@@ -1599,7 +1601,7 @@ class datetime(date):
         microsecond: Optional[str] = None,
         tzinfo: bool = True,
         *,
-        fold: Optional[int] = None
+        fold: Optional[int] = None,
     ) -> "datetime":
         """Return a datetime with the same attributes,
         except for those attributes given new values by
