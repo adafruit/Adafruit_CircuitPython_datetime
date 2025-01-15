@@ -1522,11 +1522,11 @@ class datetime(date):
     def timestamp(self) -> float:
         """Return POSIX timestamp as float.
 
-        Note that Floats on most
-        boards are encoded in 30 bits internally, with effectively 22
-        bits of precision. As a result, for modern dates this value
-        can be off by several minutes. As a workaround you can access
-        the function ``_mitime()`` to get an int version of the timestamp.
+        Note that Floats on most boards are encoded in 30 bits
+        internally, with effectively 22 bits of precision. As a result,
+        for modern dates this value can be off by several minutes.
+        As a workaround you can access the function ``_mitime()``
+        to get an int version of the timestamp.
         """
         if not self._tzinfo is None:
             return (self - _EPOCH).total_seconds()
