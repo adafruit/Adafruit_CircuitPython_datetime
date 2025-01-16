@@ -1520,7 +1520,14 @@ class datetime(date):
         return _ymd2ord(self._year, self._month, self._day)
 
     def timestamp(self) -> float:
-        "Return POSIX timestamp as float"
+        """Return POSIX timestamp as float.
+
+        Note that Floats on most boards are encoded in 30 bits
+        internally, with effectively 22 bits of precision. As a result,
+        for modern dates this value can be off by several minutes.
+        As a workaround you can access the function ``_mktime()``
+        to get an int version of the timestamp.
+        """
         if not self._tzinfo is None:
             return (self - _EPOCH).total_seconds()
         s = self._mktime()
