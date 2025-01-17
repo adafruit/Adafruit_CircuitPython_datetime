@@ -1520,7 +1520,7 @@ class datetime(date):
         return _ymd2ord(self._year, self._month, self._day)
 
     def timestamp(self) -> float:
-        """Return POSIX timestamp as float."""
+        """Return POSIX timestamp as int, similar to the value returned by ``time.time()``."""
         if not self._tzinfo is None:
             return (self - _EPOCH).total_seconds()
         return self._mktime()
