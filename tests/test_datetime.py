@@ -527,8 +527,8 @@ class TestDateTime(TestDate):
     def test_timestamp_naive(self):
         t = self.theclass(1970, 1, 1)
         self.assertEqual(t.timestamp(), 18000.0)
-        t = self.theclass(1970, 1, 1, 1, 2, 3, 4)
-        self.assertEqual(t.timestamp(), 18000.0 + 3600 + 2 * 60 + 3 + 4 * 1e-6)
+        t = self.theclass(1970, 1, 1, 1, 2, 3)
+        self.assertEqual(t.timestamp(), 18000.0 + 3600 + 2 * 60 + 3)
         # Missing hour
         t0 = self.theclass(2012, 3, 11, 2, 30)
         t1 = t0.replace(fold=1)
