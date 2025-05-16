@@ -26,14 +26,15 @@ Implementation Notes
 
 
 """
-# pylint: disable=too-many-lines
-import time as _time
+
 import math as _math
 import re as _re
+import time as _time
+
 from micropython import const
 
 try:
-    from typing import Any, Union, Optional, Tuple, Sequence, List
+    from typing import Any, List, Optional, Sequence, Tuple, Union
 except ImportError:
     pass
 
@@ -76,18 +77,12 @@ def _cmp(obj_x: Any, obj_y: Any) -> int:
     return 0 if obj_x == obj_y else 1 if obj_x > obj_y else -1
 
 
-def _cmperror(
-    obj_x: Union["datetime", "timedelta"], obj_y: Union["datetime", "timedelta"]
-) -> None:
-    raise TypeError(
-        "can't compare '%s' to '%s'" % (type(obj_x).__name__, type(obj_y).__name__)
-    )
+def _cmperror(obj_x: Union["datetime", "timedelta"], obj_y: Union["datetime", "timedelta"]) -> None:
+    raise TypeError(f"can't compare '{type(obj_x).__name__}' to '{type(obj_y).__name__}'")
 
 
 # Utility functions - time
-def _check_time_fields(
-    hour: int, minute: int, second: int, microsecond: int, fold: int
-) -> None:
+def _check_time_fields(hour: int, minute: int, second: int, microsecond: int, fold: int) -> None:
     if not isinstance(hour, int):
         raise TypeError("Hour expected as int")
     if not 0 <= hour <= 23:
@@ -98,32 +93,25 @@ def _check_time_fields(
         raise ValueError("second must be in 0..59", second)
     if not 0 <= microsecond <= 999999:
         raise ValueError("microsecond must be in 0..999999", microsecond)
-    if fold not in (0, 1):  # from CPython API
+    if fold not in {0, 1}:  # from CPython API
         raise ValueError("fold must be either 0 or 1", fold)
 
 
 def _check_utc_offset(name: str, offset: "timedelta") -> None:
-    assert name in ("utcoffset", "dst")
+    assert name in {"utcoffset", "dst"}
     if offset is None:
         return
     if not isinstance(offset, timedelta):
-        raise TypeError(
-            "tzinfo.%s() must return None "
-            "or timedelta, not '%s'" % (name, type(offset))
-        )
+        raise TypeError(f"tzinfo.{name}() must return None or timedelta, not '{type(offset)}'")
     if offset % timedelta(minutes=1) or offset.microseconds:
-        raise ValueError(
-            "tzinfo.%s() must return a whole number "
-            "of minutes, got %s" % (name, offset)
-        )
+        raise ValueError(f"tzinfo.{name}() must return a whole number of minutes, got {offset}")
     if not -timedelta(1) < offset < timedelta(1):
         raise ValueError(
-            "%s()=%s, must be must be strictly between"
-            " -timedelta(hours=24) and timedelta(hours=24)" % (name, offset)
+            f"{name}()={offset}, must be must be strictly between"
+            " -timedelta(hours=24) and timedelta(hours=24)"
         )
 
 
-# pylint: disable=invalid-name
 def _format_offset(off: "timedelta") -> str:
     s = ""
     if off is not None:
@@ -134,12 +122,12 @@ def _format_offset(off: "timedelta") -> str:
             sign = "+"
         hh, mm = divmod(off, timedelta(hours=1))
         mm, ss = divmod(mm, timedelta(minutes=1))
-        s += "%s%02d:%02d" % (sign, hh, mm)
+        s += f"{sign}{hh:02d}:{mm:02d}"
         if ss or ss.microseconds:
-            s += ":%02d" % ss.seconds
+            s += f":{ss.seconds:02d}"
 
             if ss.microseconds:
-                s += ".%06d" % ss.microseconds
+                s += f".{ss.microseconds:06d}"
     return s
 
 
@@ -147,9 +135,7 @@ def _format_offset(off: "timedelta") -> str:
 def _check_tzname(name: Optional[str]) -> None:
     """ "Just raise TypeError if the arg isn't None or a string."""
     if name is not None and not isinstance(name, str):
-        raise TypeError(
-            "tzinfo.tzname() must return None or string, " "not '%s'" % type(name)
-        )
+        raise TypeError("tzinfo.tzname() must return None or string, " "not '%s'" % type(name))
 
 
 def _check_tzinfo_arg(time_zone: Optional["tzinfo"]):
@@ -203,7 +189,6 @@ def _ymd2ord(year: int, month: int, day: int) -> int:
     return _days_before_year(year) + _days_before_month(year, month) + day
 
 
-# pylint: disable=too-many-arguments
 def _build_struct_time(
     tm_year: int,
     tm_month: int,
@@ -230,7 +215,6 @@ def _build_struct_time(
     )
 
 
-# pylint: disable=invalid-name
 def _format_time(hh: int, mm: int, ss: int, us: int, timespec: str = "auto") -> str:
     if timespec != "auto":
         raise NotImplementedError("Only default timespec supported")
@@ -321,7 +305,6 @@ def _ord2ymd(n: int) -> Tuple[int, int, int]:
 class timedelta:
     """A timedelta object represents a duration, the difference between two dates or times."""
 
-    # pylint: disable=too-many-arguments, too-many-locals, too-many-statements
     def __new__(
         cls,
         days: int = 0,
@@ -459,31 +442,28 @@ class timedelta:
     def __repr__(self) -> str:
         args = []
         if self._days:
-            args.append("days=%d" % self._days)
+            args.append(f"days={self._days}")
         if self._seconds:
-            args.append("seconds=%d" % self._seconds)
+            args.append(f"seconds={self._seconds}")
         if self._microseconds:
-            args.append("microseconds=%d" % self._microseconds)
+            args.append(f"microseconds={self._microseconds}")
         if not args:
             args.append("0")
-        return "%s.%s(%s)" % (
-            self.__class__.__module__,
-            self.__class__.__qualname__,
-            ", ".join(args),
-        )
+        return f"{self.__class__.__module__}.{self.__class__.__qualname__}({', '.join(args)})"
 
     def __str__(self) -> str:
         mm, ss = divmod(self._seconds, 60)
         hh, mm = divmod(mm, 60)
-        s = "%d:%02d:%02d" % (hh, mm, ss)
+        s = f"{hh}:{mm:02d}:{ss:02d}"
         if self._days:
 
             def plural(n):
                 return n, abs(n) != 1 and "s" or ""
 
-            s = ("%d day%s, " % plural(self._days)) + s
+            days, suffix = plural(self._days)
+            s = f"{days} day{suffix}, {s}"
         if self._microseconds:
-            s = s + ".%06d" % self._microseconds
+            s = f"{s}.{self._microseconds:06d}"
         return s
 
     # Supported operations
@@ -535,9 +515,7 @@ class timedelta:
         if isinstance(other, int):
             # for CPython compatibility, we cannot use
             # our __class__ here, but need a real timedelta
-            return timedelta(
-                self._days * other, self._seconds * other, self._microseconds * other
-            )
+            return timedelta(self._days * other, self._seconds * other, self._microseconds * other)
         if isinstance(other, float):
             # a, b = other.as_integer_ratio()
             # return self * a / b
@@ -578,7 +556,6 @@ class timedelta:
             _cmperror(self, other)
         return self._cmp(other) > 0
 
-    # pylint: disable=no-self-use, protected-access
     def _cmp(self, other: "timedelta") -> int:
         assert isinstance(other, timedelta)
         return _cmp(self._getstate(), other._getstate())
@@ -590,7 +567,6 @@ class timedelta:
         return (self._days, self._seconds, self._microseconds)
 
 
-# pylint: disable=no-self-use
 class tzinfo:
     """This is an abstract base class, meaning that this class should not
     be instantiated directly. Define a subclass of tzinfo to capture information
@@ -609,15 +585,13 @@ class tzinfo:
         """Return the time zone name corresponding to the datetime object dt, as a string."""
         raise NotImplementedError("tzinfo subclass must override tzname()")
 
-    def dst(self, dt: "datetime") -> None:  # pylint: disable=unused-argument
+    def dst(self, dt: "datetime") -> None:
         """Return the DST setting correspinding to the datetime object dt, as a number.
 
         DST usage is currently not implemented for this library.
         """
         return None
 
-    # tzinfo is an abstract base class, disabling for self._offset
-    # pylint: disable=no-member
     def fromutc(self, dt: "datetime") -> "datetime":
         "datetime in UTC -> datetime in local time."
 
@@ -696,9 +670,7 @@ class date:
         Valid format is ``YYYY-MM-DD``
 
         """
-        match = _re.match(
-            r"([0-9][0-9][0-9][0-9])-([0-9][0-9])-([0-9][0-9])$", date_string
-        )
+        match = _re.match(r"([0-9][0-9][0-9][0-9])-([0-9][0-9])-([0-9][0-9])$", date_string)
         if match:
             y, m, d = int(match.group(1)), int(match.group(2)), int(match.group(3))
             return cls(y, m, d)
@@ -748,19 +720,14 @@ class date:
 
     def isoformat(self) -> str:
         """Return a string representing the date in ISO 8601 format, YYYY-MM-DD:"""
-        return "%04d-%02d-%02d" % (self._year, self._month, self._day)
+        return f"{self._year:04d}-{self._month:02d}-{self._day:02d}"
 
     # For a date d, str(d) is equivalent to d.isoformat()
     __str__ = isoformat
 
     def __repr__(self) -> str:
         """Convert to formal string, for repr()."""
-        return "%s(%d, %d, %d)" % (
-            "datetime." + self.__class__.__name__,
-            self._year,
-            self._month,
-            self._day,
-        )
+        return f"datetime.{self.__class__.__name__}({self._year}, {self._month}, {self._day})"
 
     # Supported comparisons
     def __eq__(self, other: "date") -> bool:
@@ -822,9 +789,7 @@ class timezone(tzinfo):
     # Sentinel value to disallow None
     _Omitted = object()
 
-    def __new__(
-        cls, offset: timedelta, name: Union[str, object] = _Omitted
-    ) -> "timezone":
+    def __new__(cls, offset: timedelta, name: Union[str, object] = _Omitted) -> "timezone":
         if not isinstance(offset, timedelta):
             raise TypeError("offset must be a timedelta")
         if name is cls._Omitted:
@@ -840,14 +805,11 @@ class timezone(tzinfo):
                 " timedelta(hours=24)."
             )
         if offset.microseconds != 0 or offset.seconds % 60 != 0:
-            raise ValueError(
-                "offset must be a timedelta representing a whole number of minutes"
-            )
+            raise ValueError("offset must be a timedelta representing a whole number of minutes")
         cls._offset = offset
         cls._name = name
         return cls._create(offset, name)
 
-    # pylint: disable=protected-access, bad-super-call
     @classmethod
     def _create(cls, offset: timedelta, name: Optional[str] = None) -> "timezone":
         """High-level creation for a timezone object."""
@@ -883,12 +845,8 @@ class timezone(tzinfo):
         if self is self.utc:
             return "datetime.timezone.utc"
         if self._name is None:
-            return "%s(%r)" % ("datetime." + self.__class__.__name__, self._offset)
-        return "%s(%r, %r)" % (
-            "datetime." + self.__class__.__name__,
-            self._offset,
-            self._name,
-        )
+            return f"datetime.{self.__class__.__name__}({self._offset!r})"
+        return f"datetime.{self.__class__.__name__}({self._offset!r}, {self._name!r})"
 
     def __str__(self) -> str:
         return self.tzname(None)
@@ -902,7 +860,7 @@ class timezone(tzinfo):
             sign = "+"
         hours, rest = divmod(delta, timedelta(hours=1))
         minutes = rest // timedelta(minutes=1)
-        return "UTC{}{:02d}:{:02d}".format(sign, hours, minutes)
+        return f"UTC{sign}{hours:02d}:{minutes:02d}"
 
     maxoffset = timedelta(hours=23, minutes=59)
     minoffset = -maxoffset
@@ -914,7 +872,6 @@ class time:
 
     """
 
-    # pylint: disable=redefined-outer-name
     def __new__(
         cls,
         hour: int = 0,
@@ -987,7 +944,6 @@ class time:
             raise ValueError()
         return results
 
-    # pylint: disable=too-many-locals
     @classmethod
     def fromisoformat(cls, time_string: str) -> "time":
         """Return a time object constructed from an ISO date format.
@@ -1074,9 +1030,7 @@ class time:
         HH:MM:SS+HH:MM[:SS[.ffffff]], if microsecond is 0 and utcoffset() does not return None
 
         """
-        s = _format_time(
-            self._hour, self._minute, self._second, self._microsecond, timespec
-        )
+        s = _format_time(self._hour, self._minute, self._second, self._microsecond, timespec)
         tz = self._tzstr()
         if tz:
             s += tz
@@ -1195,31 +1149,26 @@ class time:
             assert not mm % timedelta(minutes=1), "whole minute"
             mm //= timedelta(minutes=1)
             assert 0 <= hh < 24
-            off = "%s%02d%s%02d" % (sign, hh, sep, mm)
+            off = f"{sign}{hh:02d}{sep}{mm:02d}"
         return off
 
     def __format__(self, fmt: str) -> str:
         if not isinstance(fmt, str):
-            raise TypeError("must be str, not %s" % type(fmt).__name__)
+            raise TypeError(f"must be str, not {type(fmt).__name__}")
         return str(self)
 
     def __repr__(self) -> str:
         """Convert to formal string, for repr()."""
         if self._microsecond != 0:
-            s = ", %d, %d" % (self._second, self._microsecond)
+            s = f", {self._second}, {self._microsecond}"
         elif self._second != 0:
-            s = ", %d" % self._second
+            s = f", {self._second}"
         else:
             s = ""
-        s = "%s(%d, %d%s)" % (
-            "datetime." + self.__class__.__name__,
-            self._hour,
-            self._minute,
-            s,
-        )
+        s = f"datetime.{self.__class__.__name__}({self._hour}, {self._minute}{s})"
         if self._tzinfo is not None:
             assert s[-1:] == ")"
-            s = s[:-1] + ", tzinfo=%r" % self._tzinfo + ")"
+            s = f"{s[:-1]}, tzinfo={self._tzinfo!r})"
         return s
 
     # Pickle support
@@ -1235,7 +1184,6 @@ class time:
         return (basestate,)
 
 
-# pylint: disable=too-many-instance-attributes, too-many-public-methods
 class datetime(date):
     """A datetime object is a single object containing all the information
     from a date object and a time object. Like a date object, datetime assumes
@@ -1244,7 +1192,6 @@ class datetime(date):
 
     """
 
-    # pylint: disable=redefined-outer-name
     def __new__(
         cls,
         year: int,
@@ -1325,7 +1272,6 @@ class datetime(date):
 
     # Class methods
 
-    # pylint: disable=protected-access
     @classmethod
     def _fromtimestamp(cls, t: float, utc: bool, tz: Optional["tzinfo"]) -> "datetime":
         """Construct a datetime from a POSIX timestamp (like time.time()).
@@ -1344,9 +1290,7 @@ class datetime(date):
             us = 0
 
         if utc:
-            raise NotImplementedError(
-                "CircuitPython does not currently implement time.gmtime."
-            )
+            raise NotImplementedError("CircuitPython does not currently implement time.gmtime.")
         converter = _time.localtime
         struct_time = converter(t)
         ss = min(struct_time[5], 59)  # clamp out leap seconds if the platform has them
@@ -1364,11 +1308,8 @@ class datetime(date):
             result = tz.fromutc(result)
         return result
 
-    ## pylint: disable=arguments-differ, arguments-renamed
     @classmethod
-    def fromtimestamp(
-        cls, timestamp: float, tz: Optional["tzinfo"] = None
-    ) -> "datetime":
+    def fromtimestamp(cls, timestamp: float, tz: Optional["tzinfo"] = None) -> "datetime":
         return cls._fromtimestamp(timestamp, tz is not None, tz)
 
     @classmethod
@@ -1532,15 +1473,7 @@ class datetime(date):
     def ctime(self) -> str:
         "Return string representing the datetime."
         weekday = self.toordinal() % 7 or 7
-        return "%s %s %2d %02d:%02d:%02d %04d" % (
-            _DAYNAMES[weekday],
-            _MONTHNAMES[self._month],
-            self._day,
-            self._hour,
-            self._minute,
-            self._second,
-            self._year,
-        )
+        return f"{_DAYNAMES[weekday]} {_MONTHNAMES[self._month]} {self._day:2d} {self._hour:02d}:{self._minute:02d}:{self._second:02d} {self._year:04d}"  # noqa: E501
 
     def __repr__(self) -> str:
         """Convert to formal string, for repr()."""
@@ -1558,10 +1491,10 @@ class datetime(date):
         if L[-1] == 0:
             del L[-1]
         s = ", ".join(map(str, L))
-        s = "%s(%s)" % ("datetime." + self.__class__.__name__, s)
+        s = f"datetime.{self.__class__.__name__}({s})"
         if self._tzinfo is not None:
             assert s[-1:] == ")"
-            s = s[:-1] + ", tzinfo=%r" % self._tzinfo + ")"
+            s = f"{s[:-1]}, tzinfo={self._tzinfo!r})"
         return s
 
     def isoformat(self, sep: str = "T", timespec: str = "auto") -> str:
@@ -1569,12 +1502,7 @@ class datetime(date):
         ISO8601 format.
 
         """
-        s = "%04d-%02d-%02d%c" % (
-            self._year,
-            self._month,
-            self._day,
-            sep,
-        ) + _format_time(
+        s = f"{self._year:04d}-{self._month:02d}-{self._day:02d}{sep}" + _format_time(
             self._hour, self._minute, self._second, self._microsecond, timespec
         )
 
@@ -1625,9 +1553,7 @@ class datetime(date):
             tzinfo = self.tzinfo
         if fold is None:
             fold = self._fold
-        return type(self)(
-            year, month, day, hour, minute, second, microsecond, tzinfo, fold=fold
-        )
+        return type(self)(year, month, day, hour, minute, second, microsecond, tzinfo, fold=fold)
 
     # Comparisons of datetime objects.
     def __eq__(self, other: Any) -> bool:
@@ -1738,9 +1664,7 @@ class datetime(date):
         days2 = other.toordinal()
         secs1 = self._second + self._minute * 60 + self._hour * 3600
         secs2 = other._second + other._minute * 60 + other._hour * 3600
-        base = timedelta(
-            days1 - days2, secs1 - secs2, self._microsecond - other._microsecond
-        )
+        base = timedelta(days1 - days2, secs1 - secs2, self._microsecond - other._microsecond)
         if self._tzinfo is other._tzinfo:
             return base
         myoff = self.utcoffset()
@@ -1760,9 +1684,7 @@ class datetime(date):
             else:
                 days = _ymd2ord(self.year, self.month, self.day)
                 seconds = self.hour * 3600 + self.minute * 60 + self.second
-                self._hashcode = hash(
-                    timedelta(days, seconds, self.microsecond) - tzoff
-                )
+                self._hashcode = hash(timedelta(days, seconds, self.microsecond) - tzoff)
         return self._hashcode
 
     def _getstate(self) -> Tuple[bytes]:
@@ -1793,7 +1715,6 @@ class datetime(date):
 
 
 # Module exports
-# pylint: disable=protected-access
 timezone.utc = timezone._create(timedelta(0))
 timezone.min = timezone._create(timezone.minoffset)
 timezone.max = timezone._create(timezone.maxoffset)
