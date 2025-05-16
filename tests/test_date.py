@@ -12,10 +12,10 @@
 # pylint:disable=invalid-name, no-member, wrong-import-position, undefined-variable, no-self-use, cell-var-from-loop, too-many-public-methods, fixme, import-outside-toplevel, unused-argument, too-few-public-methods
 import sys
 import unittest
+from datetime import MAXYEAR, MINYEAR
 
 # CPython standard implementation
 from datetime import date as cpython_date
-from datetime import MINYEAR, MAXYEAR
 
 # CircuitPython subset implementation
 sys.path.append("..")
@@ -130,9 +130,7 @@ class TestDate(unittest.TestCase):
 
         # It worked or it didn't.  If it didn't, assume it's reason #2, and
         # let the test pass if they're within half a second of each other.
-        self.assertTrue(
-            today == todayagain or abs(todayagain - today) < timedelta(seconds=0.5)
-        )
+        self.assertTrue(today == todayagain or abs(todayagain - today) < timedelta(seconds=0.5))
 
     def test_weekday(self):
         for i in range(7):
@@ -155,9 +153,7 @@ class TestDate(unittest.TestCase):
                 cpython_date(1956, 1, 2 + i).isoweekday(),
             )
 
-    @unittest.skip(
-        "Skip for CircuitPython - isocalendar() not implemented for date objects."
-    )
+    @unittest.skip("Skip for CircuitPython - isocalendar() not implemented for date objects.")
     def test_isocalendar(self):
         # Check examples from
         # http://www.phys.uu.nl/~vgent/calendar/isocalendar.htm
@@ -187,9 +183,7 @@ class TestDate(unittest.TestCase):
         t = cpy_date(2002, 3, 2)
         self.assertEqual(t.ctime(), "Sat Mar  2 00:00:00 2002")
 
-    @unittest.skip(
-        "Skip for CircuitPython - strftime() not implemented for date objects."
-    )
+    @unittest.skip("Skip for CircuitPython - strftime() not implemented for date objects.")
     def test_strftime(self):
         t = cpy_date(2005, 3, 2)
         self.assertEqual(t.strftime("m:%m d:%d y:%y"), "m:03 d:02 y:05")
@@ -252,9 +246,7 @@ class TestDate(unittest.TestCase):
             self.assertEqual(a.__format__(fmt), dt.strftime(fmt))
             self.assertEqual(b.__format__(fmt), 'B')"""
 
-    @unittest.skip(
-        "Skip for CircuitPython - min/max/resolution not implemented for date objects."
-    )
+    @unittest.skip("Skip for CircuitPython - min/max/resolution not implemented for date objects.")
     def test_resolution_info(self):
         # XXX: Should min and max respect subclassing?
         if issubclass(cpy_date, datetime):
@@ -405,9 +397,7 @@ class TestDate(unittest.TestCase):
         self.assertEqual(our < their, True)
         self.assertEqual(their < our, False)
 
-    @unittest.skip(
-        "Skip for CircuitPython - min/max date attributes not implemented yet."
-    )
+    @unittest.skip("Skip for CircuitPython - min/max date attributes not implemented yet.")
     def test_bool(self):
         # All dates are considered true.
         self.assertTrue(cpy_date.min)

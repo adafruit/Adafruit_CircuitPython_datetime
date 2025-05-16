@@ -14,12 +14,12 @@
 import sys
 
 sys.path.append("..")
-from adafruit_datetime import time as cpy_time
+import unittest
 
 # CPython standard implementation
 from datetime import time as cpython_time
-import unittest
 
+from adafruit_datetime import time as cpy_time
 
 # An arbitrary collection of objects of non-datetime types, for testing
 # mixed-type comparisons.
@@ -274,12 +274,8 @@ class TestTime(HarmlessMixedComparison, unittest.TestCase):
     def test_repr(self):
         name = "datetime." + self.theclass.__name__
         self.assertEqual(repr(self.theclass(1, 2, 3, 4)), "%s(1, 2, 3, 4)" % name)
-        self.assertEqual(
-            repr(self.theclass(10, 2, 3, 4000)), "%s(10, 2, 3, 4000)" % name
-        )
-        self.assertEqual(
-            repr(self.theclass(0, 2, 3, 400000)), "%s(0, 2, 3, 400000)" % name
-        )
+        self.assertEqual(repr(self.theclass(10, 2, 3, 4000)), "%s(10, 2, 3, 4000)" % name)
+        self.assertEqual(repr(self.theclass(0, 2, 3, 400000)), "%s(0, 2, 3, 400000)" % name)
         self.assertEqual(repr(self.theclass(12, 2, 3, 0)), "%s(12, 2, 3)" % name)
         self.assertEqual(repr(self.theclass(23, 15, 0, 0)), "%s(23, 15)" % name)
 

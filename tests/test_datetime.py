@@ -14,20 +14,17 @@ import sys
 
 # CircuitPython subset implementation
 sys.path.append("..")
-from adafruit_datetime import datetime as cpy_datetime
-from adafruit_datetime import timedelta
-from adafruit_datetime import tzinfo
-from adafruit_datetime import date
-from adafruit_datetime import time
-from adafruit_datetime import timezone
-
 import unittest
-from test import support
-from test_date import TestDate
+from datetime import MAXYEAR, MINYEAR
 
 # CPython standard implementation
 from datetime import datetime as cpython_datetime
-from datetime import MINYEAR, MAXYEAR
+from test import support
+
+from test_date import TestDate
+
+from adafruit_datetime import date, time, timedelta, timezone, tzinfo
+from adafruit_datetime import datetime as cpy_datetime
 
 
 # TZinfo test
@@ -158,12 +155,8 @@ class TestDateTime(TestDate):
         self.assertEqual(t.isoformat(timespec="hours"), "0001-02-03T04")
         self.assertEqual(t.isoformat(timespec="minutes"), "0001-02-03T04:05")
         self.assertEqual(t.isoformat(timespec="seconds"), "0001-02-03T04:05:01")
-        self.assertEqual(
-            t.isoformat(timespec="milliseconds"), "0001-02-03T04:05:01.000"
-        )
-        self.assertEqual(
-            t.isoformat(timespec="microseconds"), "0001-02-03T04:05:01.000123"
-        )
+        self.assertEqual(t.isoformat(timespec="milliseconds"), "0001-02-03T04:05:01.000")
+        self.assertEqual(t.isoformat(timespec="microseconds"), "0001-02-03T04:05:01.000123")
         self.assertEqual(t.isoformat(timespec="auto"), "0001-02-03T04:05:01.000123")
         self.assertEqual(t.isoformat(sep=" ", timespec="minutes"), "0001-02-03 04:05")
         self.assertRaises(ValueError, t.isoformat, timespec="foo")
@@ -173,23 +166,15 @@ class TestDateTime(TestDate):
         self.assertEqual(str(t), "0001-02-03 04:05:01.000123")
 
         t = self.theclass(1, 2, 3, 4, 5, 1, 999500, tzinfo=timezone.utc)
-        self.assertEqual(
-            t.isoformat(timespec="milliseconds"), "0001-02-03T04:05:01.999+00:00"
-        )
+        self.assertEqual(t.isoformat(timespec="milliseconds"), "0001-02-03T04:05:01.999+00:00")
 
         t = self.theclass(1, 2, 3, 4, 5, 1, 999500)
-        self.assertEqual(
-            t.isoformat(timespec="milliseconds"), "0001-02-03T04:05:01.999"
-        )
+        self.assertEqual(t.isoformat(timespec="milliseconds"), "0001-02-03T04:05:01.999")
 
         t = self.theclass(1, 2, 3, 4, 5, 1)
         self.assertEqual(t.isoformat(timespec="auto"), "0001-02-03T04:05:01")
-        self.assertEqual(
-            t.isoformat(timespec="milliseconds"), "0001-02-03T04:05:01.000"
-        )
-        self.assertEqual(
-            t.isoformat(timespec="microseconds"), "0001-02-03T04:05:01.000000"
-        )
+        self.assertEqual(t.isoformat(timespec="milliseconds"), "0001-02-03T04:05:01.000")
+        self.assertEqual(t.isoformat(timespec="microseconds"), "0001-02-03T04:05:01.000000")
 
         t = self.theclass(2, 3, 2)
         self.assertEqual(t.isoformat(), "0002-03-02T00:00:00")
@@ -284,9 +269,7 @@ class TestDateTime(TestDate):
 
         # So test a case where that difference doesn't matter.
         t = self.theclass(2002, 3, 22, 18, 3, 5, 123)
-        self.assertEqual(
-            t.ctime(), cpython_time.ctime(cpython_time.mktime(t.timetuple()))
-        )
+        self.assertEqual(t.ctime(), cpython_time.ctime(cpython_time.mktime(t.timetuple())))
 
     def test_tz_independent_comparing(self):
         dt1 = self.theclass(2002, 3, 1, 9, 0, 0)
@@ -435,16 +418,12 @@ class TestDateTime(TestDate):
             a + (week + day + hour + millisec),
             self.theclass(2002, 3, 10, 18, 6, 0, 1000),
         )
-        self.assertEqual(
-            a + (week + day + hour + millisec), (((a + week) + day) + hour) + millisec
-        )
+        self.assertEqual(a + (week + day + hour + millisec), (((a + week) + day) + hour) + millisec)
         self.assertEqual(
             a - (week + day + hour + millisec),
             self.theclass(2002, 2, 22, 16, 5, 59, 999000),
         )
-        self.assertEqual(
-            a - (week + day + hour + millisec), (((a - week) - day) - hour) - millisec
-        )
+        self.assertEqual(a - (week + day + hour + millisec), (((a - week) - day) - hour) - millisec)
         # Add/sub ints or floats should be illegal
         for i in 1, 1.0:
             self.assertRaises(TypeError, lambda: a + i)
@@ -532,12 +511,8 @@ class TestDateTime(TestDate):
         # Missing hour
         t0 = self.theclass(2012, 3, 11, 2, 30)
         t1 = t0.replace(fold=1)
-        self.assertEqual(
-            self.theclass.fromtimestamp(t1.timestamp()), t0 - timedelta(hours=1)
-        )
-        self.assertEqual(
-            self.theclass.fromtimestamp(t0.timestamp()), t1 + timedelta(hours=1)
-        )
+        self.assertEqual(self.theclass.fromtimestamp(t1.timestamp()), t0 - timedelta(hours=1))
+        self.assertEqual(self.theclass.fromtimestamp(t0.timestamp()), t1 + timedelta(hours=1))
         # Ambiguous hour defaults to DST
         t = self.theclass(2012, 11, 4, 1, 30)
         self.assertEqual(self.theclass.fromtimestamp(t.timestamp()), t)
@@ -556,9 +531,7 @@ class TestDateTime(TestDate):
         self.assertEqual(t.timestamp(), 0.0)
         t = self.theclass(1970, 1, 1, 1, 2, 3, 4, tzinfo=timezone.utc)
         self.assertEqual(t.timestamp(), 3600 + 2 * 60 + 3 + 4 * 1e-6)
-        t = self.theclass(
-            1970, 1, 1, 1, 2, 3, 4, tzinfo=timezone(timedelta(hours=-5), "EST")
-        )
+        t = self.theclass(1970, 1, 1, 1, 2, 3, 4, tzinfo=timezone(timedelta(hours=-5), "EST"))
         self.assertEqual(t.timestamp(), 18000 + 3600 + 2 * 60 + 3 + 4 * 1e-6)
 
     @unittest.skip("Not implemented - gmtime")
@@ -609,9 +582,7 @@ class TestDateTime(TestDate):
         min_ts = min_dt.timestamp()
         try:
             # date 0001-01-01 00:00:00+00:00: timestamp=-62135596800
-            self.assertEqual(
-                self.theclass.fromtimestamp(min_ts, tz=timezone.utc), min_dt
-            )
+            self.assertEqual(self.theclass.fromtimestamp(min_ts, tz=timezone.utc), min_dt)
         except (OverflowError, OSError) as exc:
             # the date 0001-01-01 doesn't fit into 32-bit time_t,
             # or platform doesn't support such very old date
@@ -718,7 +689,7 @@ class TestDateTime(TestDate):
                 sign = "+"
                 seconds = tzseconds
             hours, minutes = divmod(seconds // 60, 60)
-            dtstr = "{}{:02d}{:02d} {}".format(sign, hours, minutes, tzname)
+            dtstr = f"{sign}{hours:02d}{minutes:02d} {tzname}"
             dt = strptime(dtstr, "%z %Z")
             self.assertEqual(dt.utcoffset(), timedelta(seconds=tzseconds))
             self.assertEqual(dt.tzname(), tzname)
@@ -766,9 +737,7 @@ class TestDateTime(TestDate):
         ]
         for reason, string, format, target in inputs:
             reason = "test single digit " + reason
-            with self.subTest(
-                reason=reason, string=string, format=format, target=target
-            ):
+            with self.subTest(reason=reason, string=string, format=format, target=target):
                 newdate = strptime(string, format)
                 self.assertEqual(newdate, target, msg=reason)
 
@@ -805,9 +774,7 @@ class TestDateTime(TestDate):
     def test_more_strftime(self):
         # This tests fields beyond those tested by the TestDate.test_strftime.
         t = self.theclass(2004, 12, 31, 6, 22, 33, 47)
-        self.assertEqual(
-            t.strftime("%m %d %y %f %S %M %H %j"), "12 31 04 000047 33 22 06 366"
-        )
+        self.assertEqual(t.strftime("%m %d %y %f %S %M %H %j"), "12 31 04 000047 33 22 06 366")
         for (s, us), z in [
             ((33, 123), "33.000123"),
             ((33, 0), "33"),
@@ -996,9 +963,7 @@ class TestDateTime(TestDate):
         for constr_name, constr_args, expected in test_cases:
             for base_obj in (DateTimeSubclass, base_d):
                 # Test both the classmethod and method
-                with self.subTest(
-                    base_obj_type=type(base_obj), constr_name=constr_name
-                ):
+                with self.subTest(base_obj_type=type(base_obj), constr_name=constr_name):
                     constructor = getattr(base_obj, constr_name)
 
                     dt = constructor(*constr_args)
