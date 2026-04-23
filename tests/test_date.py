@@ -411,11 +411,11 @@ class TestDate(unittest.TestCase):
             # padded to 4 digits across platforms.  The C standard
             # assumes year >= 1900, so it does not specify the number
             # of digits.
-            if d.strftime("%Y") != "%04d" % y:
+            if d.strftime("%Y") != f"{y:04d}":
                 # Year 42 returns '42', not padded
-                self.assertEqual(d.strftime("%Y"), "%d" % y)
+                self.assertEqual(d.strftime("%Y"), f"{y:d}")
                 # '0042' is obtained anyway
-                self.assertEqual(d.strftime("%4Y"), "%04d" % y)
+                self.assertEqual(d.strftime("%4Y"), f"{y:04d}")
 
     @unittest.skip("Skip for CircuitPython - date replace not implemented.")
     def test_replace(self):

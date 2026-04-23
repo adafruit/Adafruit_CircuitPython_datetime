@@ -19,8 +19,8 @@ from datetime import MAXYEAR, MINYEAR
 
 # CPython standard implementation
 from datetime import datetime as cpython_datetime
-from test import support
 
+from test import support
 from test_date import TestDate
 
 from adafruit_datetime import date, time, timedelta, timezone, tzinfo

@@ -135,7 +135,7 @@ def _format_offset(off: "timedelta") -> str:
 def _check_tzname(name: Optional[str]) -> None:
     """ "Just raise TypeError if the arg isn't None or a string."""
     if name is not None and not isinstance(name, str):
-        raise TypeError("tzinfo.tzname() must return None or string, " "not '%s'" % type(name))
+        raise TypeError(f"tzinfo.tzname() must return None or string, not '{type(name)}'")
 
 
 def _check_tzinfo_arg(time_zone: Optional["tzinfo"]):
@@ -161,12 +161,12 @@ def _check_date_fields(year: int, month: int, day: int) -> None:
     if not isinstance(year, int):
         raise TypeError("int expected")
     if not MINYEAR <= year <= MAXYEAR:
-        raise ValueError("year must be in %d..%d" % (MINYEAR, MAXYEAR), year)
+        raise ValueError(f"year must be in {MINYEAR}..{MAXYEAR}", year)
     if not 1 <= month <= 12:
         raise ValueError("month must be in 1..12", month)
     dim = _days_in_month(year, month)
     if not 1 <= day <= dim:
-        raise ValueError("day must be in 1..%d" % dim, day)
+        raise ValueError(f"day must be in 1..{dim}", day)
 
 
 def _days_before_month(year: int, month: int) -> int:
@@ -177,7 +177,7 @@ def _days_before_month(year: int, month: int) -> int:
 
 def _days_before_year(year: int) -> int:
     "year -> number of days before January 1st of year."
-    year = year - 1
+    year -= 1
     return year * 365 + year // 4 - year // 100 + year // 400
 
 
@@ -185,7 +185,7 @@ def _ymd2ord(year: int, month: int, day: int) -> int:
     "year, month, day -> ordinal, considering 01-Jan-0001 as day 1."
     assert 1 <= month <= 12, "month must be in 1..12"
     dim = _days_in_month(year, month)
-    assert 1 <= day <= dim, "day must be in 1..%d" % dim
+    assert 1 <= day <= dim, f"day must be in 1..{dim}"
     return _days_before_year(year) + _days_before_month(year, month) + day
 
 
@@ -401,7 +401,7 @@ class timedelta:
         assert isinstance(us, int) and 0 <= us < 1000000
 
         if abs(d) > 999999999:
-            raise OverflowError("timedelta # of days is too large: %d" % d)
+            raise OverflowError(f"timedelta # of days is too large: {d}")
 
         self = object.__new__(cls)
         self._days = d

@@ -273,11 +273,11 @@ class TestTime(HarmlessMixedComparison, unittest.TestCase):
 
     def test_repr(self):
         name = "datetime." + self.theclass.__name__
-        self.assertEqual(repr(self.theclass(1, 2, 3, 4)), "%s(1, 2, 3, 4)" % name)
-        self.assertEqual(repr(self.theclass(10, 2, 3, 4000)), "%s(10, 2, 3, 4000)" % name)
-        self.assertEqual(repr(self.theclass(0, 2, 3, 400000)), "%s(0, 2, 3, 400000)" % name)
-        self.assertEqual(repr(self.theclass(12, 2, 3, 0)), "%s(12, 2, 3)" % name)
-        self.assertEqual(repr(self.theclass(23, 15, 0, 0)), "%s(23, 15)" % name)
+        self.assertEqual(repr(self.theclass(1, 2, 3, 4)), f"{name}(1, 2, 3, 4)")
+        self.assertEqual(repr(self.theclass(10, 2, 3, 4000)), f"{name}(10, 2, 3, 4000)")
+        self.assertEqual(repr(self.theclass(0, 2, 3, 400000)), f"{name}(0, 2, 3, 400000)")
+        self.assertEqual(repr(self.theclass(12, 2, 3, 0)), f"{name}(12, 2, 3)")
+        self.assertEqual(repr(self.theclass(23, 15, 0, 0)), f"{name}(23, 15)")
 
     @unittest.skip("Skip for CircuitPython  - not implemented")
     def test_resolution_info(self):
